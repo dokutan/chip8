@@ -49,6 +49,12 @@ fx33 | memory[I, I+1, I+2] = BCD of Vx |
 fx55 | store V0 to Vx in memory starting at I; I = I + x + 1 |
 fx65 | load V0 to Vx from memory starting at I; I = I + x + 1 |
 
+## CHIP-10 (chip10)
+https://chip-8.github.io/extensions/#chip-10
+https://github.com/mattmikolay/viper/blob/master/volume1/issue7.pdf
+
+Increased resolution: 128x64, otherwise identical to CHIP-8. In the original interpreter the memory from 0x055f to 0x0fff is reserved, this limitation doesn't exist in this interpreter.
+
 ## CHIP-8E (chip8e)
 https://chip-8.github.io/extensions/#chip-8e
 https://raw.githubusercontent.com/mattmikolay/viper/master/volume2/issue8_9.pdf
@@ -76,7 +82,7 @@ fxe7 | read Vx from input port 3 | not implemented
 
 ## CHIP-48 (chip48)
 
-Same opcodes as CHIP-8, but with quirks. 
+Same opcodes as CHIP-8, but with quirks.
 
 ## SUPER-CHIP 1.0 (schip10)
 https://chip-8.github.io/extensions/#super-chip-10
