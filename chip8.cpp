@@ -318,6 +318,7 @@ namespace chip8{
                 }
                 
                 if(hardware::allow_high_res && !hardware::high_res){ // double the coordinates in low resolution mode
+                    if(quirks::quirk_dxyn_no_wrapping && hardware::registers.at(y) >= (hardware::screen_y / 2)) return;
                     int Y = hardware::registers.at(y) % (hardware::screen_y / 2);
                     int X;
                     hardware::registers.at(0xf) = 0x00;
@@ -367,7 +368,8 @@ namespace chip8{
                         }
 
                         if(quirks::quirk_dxyn_no_wrapping && (Y + 1) >= hardware::screen_y){
-                            hardware::registers.at(0xf) += (N - 1 - n);
+                            if(quirks::quirk_dxyn_count_collisions_highres && hardware::high_res)
+                                hardware::registers.at(0xf) += (N - 1 - n);
                             break;
                         }
 
@@ -884,6 +886,7 @@ namespace chip8{
     };
 
     typedef chip8_interpreter<chip8_instruction_set<false, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false>> chip8;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false>, quirks_chip8, chip8_hardware<4096, 128, 64, false>> chip10;
     typedef chip8_interpreter<chip8_instruction_set<true, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false>> chip8e;
     typedef chip8_interpreter<chip8_instruction_set<false, false, false>, quirks_chip48, chip8_hardware<4096, 64, 32, false>> chip48;
     typedef chip8_interpreter<chip8_instruction_set<false, true, false>, quirks_schip10, chip8_hardware<4096, 128, 64, true>> schip10;
@@ -917,7 +920,7 @@ template<class chip8_class, class frontend_class> void run(char* filename){
         f.refresh();
 
         // wait
-        std::this_thread::sleep_until(clock_start + 1ms);
+        std::this_thread::sleep_until(clock_start + 2000 * 1us);
     }
 }
 
@@ -931,6 +934,8 @@ int main(int argc, char* argv[]){
 
         if(std::strcmp(argv[1], "chip8") == 0){
             run<chip8::chip8, frontend_sdl>(argv[2]);
+        }else if(std::strcmp(argv[1], "chip10") == 0){
+            run<chip8::chip10, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "chip8e") == 0){
             run<chip8::chip8e, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "chip48") == 0){
