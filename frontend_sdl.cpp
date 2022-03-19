@@ -1,6 +1,7 @@
 #include <exception>
 #include <stdexcept>
 #include <SDL2/SDL.h>
+#include <iostream>
 
 class frontend_sdl{
     protected:
@@ -11,6 +12,8 @@ class frontend_sdl{
         SDL_Renderer* sdl_renderer;
         SDL_Texture* sdl_texture;
         SDL_Event sdl_event;
+        SDL_AudioDeviceID sdl_audio_device_id;
+        SDL_AudioSpec sdl_audio_spec;
         bool sdl_initialized = false;
         Uint64 time_to_refresh = 0;
         const Uint8 *keys;
@@ -23,7 +26,7 @@ class frontend_sdl{
             frame_time = 1000 / refresh_rate;
 
             // initialize SDL
-            if(SDL_Init(SDL_INIT_VIDEO) != 0){
+            if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0){
                 throw std::runtime_error(SDL_GetError());
             }
 
@@ -54,8 +57,26 @@ class frontend_sdl{
                 throw std::runtime_error(error);
             }
 
+            // get keyboard state
             keys = SDL_GetKeyboardState(nullptr);
             if(keys == nullptr){
+                std::string error = SDL_GetError();
+                SDL_DestroyTexture(sdl_texture);
+                SDL_DestroyRenderer(sdl_renderer);
+                SDL_DestroyWindow(sdl_window);
+                SDL_Quit();
+                throw std::runtime_error(error);
+            }
+
+            // open audio device
+            SDL_zero(sdl_audio_spec);
+            sdl_audio_spec.freq = 48000;
+            sdl_audio_spec.format = AUDIO_U8;
+            sdl_audio_spec.channels = 1;
+            sdl_audio_spec.samples = 32;
+            sdl_audio_spec.callback = this->audio_callback;
+            sdl_audio_device_id = SDL_OpenAudioDevice(nullptr, 0, &sdl_audio_spec, nullptr, 0);
+            if(sdl_audio_device_id == 0){
                 std::string error = SDL_GetError();
                 SDL_DestroyTexture(sdl_texture);
                 SDL_DestroyRenderer(sdl_renderer);
@@ -75,11 +96,23 @@ class frontend_sdl{
 
         ~frontend_sdl(){
             if(sdl_initialized){
+                SDL_CloseAudioDevice(sdl_audio_device_id);
                 SDL_DestroyTexture(sdl_texture);
                 SDL_DestroyRenderer(sdl_renderer);
                 SDL_DestroyWindow(sdl_window);
                 SDL_Quit();
             }
+        }
+
+        static void audio_callback(void *userdata, uint8_t *stream, int len){
+            for(int i = 0; i < len; i++){
+                stream[i] = (i % 20 == 0) ? 0xff : 0x00;
+            }
+        }
+
+        /// start or stop the audio
+        void set_audio_state(bool playing){
+            SDL_PauseAudioDevice(sdl_audio_device_id, playing ? 0 : 1);
         }
 
         bool get_quit_requested(){

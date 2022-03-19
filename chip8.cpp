@@ -65,6 +65,20 @@ namespace chip8{
             static constexpr bool quirk_dxyn_count_collisions_highres = t_dxyn_count_collisions_highres;
             /// dxyn: disable sprite wrapping
             static constexpr bool quirk_dxyn_no_wrapping = t_dxyn_no_wrapping;
+
+            /// Print the quirks to outstream
+            void print(std::ostream &outstream){
+                outstream << "quirks:\n"
+                << "bnnn_bxnn_use_vx                " << (quirk_bnnn_bxnn_use_vx ? "true\n" : "false\n")
+                << "fx55_fx65_increment_less        " << (quirk_fx55_fx65_increment_less ? "true\n" : "false\n")
+                << "fx55_fx65_no_increment          " << (quirk_fx55_fx65_no_increment ? "true\n" : "false\n")
+                << "8xy6_8xye_shift_vx              " << (quirk_8xy6_8xye_shift_vx ? "true\n" : "false\n")
+                << "dxy0_16x16_highres              " << (quirk_dxy0_16x16_highres ? "true\n" : "false\n")
+                << "dxy0_8x16_lowres                " << (quirk_dxy0_8x16_lowres ? "true\n" : "false\n")
+                << "fx29_digits_highres             " << (quirk_fx29_digits_highres ? "true\n" : "false\n")
+                << "dxyn_count_collisions_highres   " << (quirk_dxyn_count_collisions_highres ? "true\n" : "false\n")
+                << "dxyn_no_wrapping                " << (quirk_dxyn_no_wrapping ? "true\n" : "false\n");
+            }
     };
 
     typedef chip8_quirks<false, false, false, false, false, false, false, false, false> quirks_chip8;
@@ -363,6 +377,10 @@ namespace chip8{
             }
         
         public:
+            chip8_interpreter(){
+                quirks::print(std::cout);
+            }
+
             /// execute one instruction at pc and increment pc
             template<class frontend> int execute(frontend &f){
                 int return_value = 1;
@@ -371,6 +389,7 @@ namespace chip8{
                 std::chrono::time_point<std::chrono::steady_clock> timer_now = std::chrono::steady_clock::now();
                 if(std::chrono::duration_cast<std::chrono::microseconds>(timer_now - hardware::timer_start).count() >= hardware::timer_delay){
                     hardware::timer_start = timer_now;
+                    if(hardware::sound_timer == 1) f.set_audio_state(false);
                     hardware::delay_timer = hardware::delay_timer > 0 ? hardware::delay_timer - 1 : 0;
                     hardware::sound_timer = hardware::sound_timer > 0 ? hardware::sound_timer - 1 : 0;
                 }
@@ -804,6 +823,7 @@ namespace chip8{
                             
                             case 0x18: // fx18 - sound timer = Vx
                                 hardware::sound_timer = hardware::registers.at(high & 0x0f);
+                                if(hardware::sound_timer > 1) f.set_audio_state(true);
                                 break;
                             
                             case 0x1e: // fx1e - I += Vx

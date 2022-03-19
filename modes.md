@@ -53,6 +53,8 @@ fx65 | load V0 to Vx from memory starting at I; I = I + x + 1 |
 https://chip-8.github.io/extensions/#chip-8e
 https://raw.githubusercontent.com/mattmikolay/viper/master/volume2/issue8_9.pdf
 
+This extension was described by Gilles Detillieux in VIPER volume 2, issue 8/9. In some places the extension by Paul C. Moews from Programs for the COSMAC ELF – Interpreters is called CHIP-8E, however these extensions are different and not compatible.
+
 Identical to CHIP-8, with the following opcodes added:
 
 opcode | description | note
