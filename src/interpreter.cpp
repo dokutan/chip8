@@ -2,6 +2,7 @@
 #include <string>
 #include <exception>
 #include <stdexcept>
+#include <cstdlib>
 
 namespace chip8{
     template<class instruction_set, class quirks, class hardware> class chip8_interpreter : public hardware, public quirks, public instruction_set{
@@ -176,9 +177,6 @@ namespace chip8{
                 uint8_t high_h = (high >> 4), high_l = high & 0x0f, low_h = low >> 4, low_l = low & 0x0f;
                 uint16_t opcode = (high << 8) | low;
 
-                // temporary variable during operations
-                uint8_t result = 0;
-
                 // increment pc
                 hardware::pc += 2;
 
@@ -203,18 +201,18 @@ namespace chip8{
                     
                     // 5xy1 - skip if Vx > Vy (CHIP-8E)
                     }else if(high_h == 0x05 && low_l == 0x01){
-                        if(hardware::registers.at(high & 0x0f) > hardware::registers.at(low >> 4)) hardware::pc += 2;
+                        if(hardware::registers.at(high_l) > hardware::registers.at(low_h)) hardware::pc += 2;
                     
                     // 5xy2 - store Vx to Vy in memory starting at I; I = I + x + 1 (CHIP-8E)
                     }else if(high_h == 0x05 && low_l == 0x02){
-                        for(uint8_t i = (high & 0x0f); i <= (low >> 4); i++){
+                        for(uint8_t i = high_l; i <= low_h; i++){
                             hardware::memory.at(hardware::register_I) = hardware::registers.at(i);
                             hardware::register_I++;
                         }
                     
                     // 5xy3 - load Vx to Vy from memory starting at I; I = I + x + 1 (CHIP-8E)
                     }else if(high_h == 0x05 && low_l == 0x03){
-                        for(uint8_t i = (high & 0x0f); i <= (low >> 4); i++){
+                        for(uint8_t i = high_l; i <= low_h; i++){
                             hardware::registers.at(i) = hardware::memory.at(hardware::register_I);
                             hardware::register_I++;
                         }
@@ -235,11 +233,11 @@ namespace chip8{
                     
                     // fx1b - skip Vx bytes (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0x1b){
-                        hardware::pc += hardware::registers.at(high & 0x0f);
+                        hardware::pc += hardware::registers.at(high_l);
                     
                     // fx4f - delay timer = Vx; wait until the delay timer reaches 0 (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0x4f){
-                        hardware::delay_timer = hardware::registers.at(high & 0x0f);
+                        hardware::delay_timer = hardware::registers.at(high_l);
                         hardware::waiting_for_timer = true;
                     
                     // fxe3 - wait for strobe at EF4; read Vx from input port 3 (CHIP-8E)
@@ -273,8 +271,8 @@ namespace chip8{
 
                     // fx75 - store V0 - Vx in RPL user flags (0 <= x <= 7) (SUPER-CHIP 1.0)
                     }else if(high_h == 0x0f && low == 0x75){
-                        if((high & 0x0f) < 8){
-                            for(uint8_t i = 0; i <= (high & 0x0f); i++){
+                        if(high_l < 8){
+                            for(uint8_t i = 0; i <= high_l; i++){
                                 hardware::flag_registers.at(i) = hardware::registers.at(i);
                             }
                         }else{
@@ -283,8 +281,8 @@ namespace chip8{
                     
                     // fx85 - load V0 - Vx from RPL user flags (0 <= x <= 7) (SUPER-CHIP 1.0)
                     }else if(high_h == 0x0f && low == 0x85){
-                        if((high & 0x0f) < 8){
-                            for(uint8_t i = 0; i <= (high & 0x0f); i++){
+                        if(high_l < 8){
+                            for(uint8_t i = 0; i <= high_l; i++){
                                 hardware::registers.at(i) = hardware::flag_registers.at(i);
                             }
                         }else{
@@ -302,9 +300,8 @@ namespace chip8{
 
                     // 00cn - scroll display n pixels down (SUPER-CHIP 1.1)
                     if(high == 0x00 && low_h == 0x0c){
-                        int n = (low & 0x0f);
-                        for(int y = hardware::screen_content.size() - 1 ; y >= n;  y--){
-                            hardware::screen_content.at(y) = hardware::screen_content.at(y - n);
+                        for(int y = hardware::screen_content.size() - 1 ; y >= low_l;  y--){
+                            hardware::screen_content.at(y) = hardware::screen_content.at(y - low_l);
                             
                             for(int x = 0; x < hardware::screen_content.at(y).size(); x++){
                                 if(hardware::screen_content.at(y).at(x)){
@@ -314,7 +311,7 @@ namespace chip8{
                                 }
                             }
                         }
-                        for(int y = 0; y < n; y++){
+                        for(int y = 0; y < low_l; y++){
                             hardware::screen_content.at(y).fill(0x00);
                             for(int x = 0; x < hardware::screen_content.at(y).size(); x++){
                                 f.draw(x, y, 0x00, 0x00, 0x00);
@@ -375,8 +372,8 @@ namespace chip8{
                     
                     // fx30 - I = address of large sprite of digit in Vx (SUPER-CHIP 1.1)
                     }else if(high_h == 0x0f && low == 0x30){
-                        if(hardware::registers.at(high & 0x0f) < 10){
-                            hardware::register_I = 80 + (hardware::registers.at(high & 0x0f)) * 10;
+                        if(hardware::registers.at(high_l) < 10){
+                            hardware::register_I = 80 + (hardware::registers.at(high_l)) * 10;
                         }else{
                             throw std::runtime_error("invalid usage of opcode fx30");
                         }
@@ -406,101 +403,104 @@ namespace chip8{
                 
                 // 1nnn - jump to nnn
                 }else if(high_h == 0x01){
-                    hardware::pc = (((high & 0x0f) << 8) | low);
+                    hardware::pc = ((high_l << 8) | low);
                 
                 // 2nnn - call subroutine at nnn
                 }else if(high_h == 0x02){
                     hardware::call_stack.push(hardware::pc);
-                    hardware::pc = (((high & 0x0f) << 8) | low);
+                    hardware::pc = ((high_l << 8) | low);
                 
                 // 3xnn - skip if Vx == nn
                 }else if(high_h == 0x03){
-                    if(hardware::registers.at(high & 0x0f) == low) hardware::pc += 2;
+                    if(hardware::registers.at(high_l) == low) hardware::pc += 2;
                 
                 // 4xnn - skip if Vx != nn
                 }else if(high_h == 0x04){
-                    if(hardware::registers.at(high & 0x0f) != low) hardware::pc += 2;
+                    if(hardware::registers.at(high_l) != low) hardware::pc += 2;
                 
                 // 5xy0 - skip if Vx == Vy
                 }else if(high_h == 0x05 && low_l == 0x00){
-                    if(hardware::registers.at(high & 0x0f) == hardware::registers.at(low >> 4)) hardware::pc += 2;
+                    if(hardware::registers.at(high_l) == hardware::registers.at(low_h)) hardware::pc += 2;
                 
                 // 6xnn - Vx = nn
                 }else if(high_h == 0x06){
-                    hardware::registers.at(high & 0x0f) = low;
+                    hardware::registers.at(high_l) = low;
                 
                 // 7xnn - Vx += nn
                 }else if(high_h == 0x07){
-                    hardware::registers.at(high & 0x0f) += low;
+                    hardware::registers.at(high_l) += low;
                 
                 // 8xy0 - Vx = Vy
                 }else if(high_h == 0x08 && low_l == 0x00){
-                    hardware::registers.at(high & 0x0f) = hardware::registers.at(low >> 4);
+                    hardware::registers.at(high_l) = hardware::registers.at(low_h);
                 
                 // 8xy1 - Vx |= Vy
                 }else if(high_h == 0x08 && low_l == 0x01){
-                    hardware::registers.at(high & 0x0f) |= hardware::registers.at(low >> 4);
+                    hardware::registers.at(high_l) |= hardware::registers.at(low_h);
                 
                 // 8xy2 - Vx &= Vy
                 }else if(high_h == 0x08 && low_l == 0x02){
-                    hardware::registers.at(high & 0x0f) &= hardware::registers.at(low >> 4);
+                    hardware::registers.at(high_l) &= hardware::registers.at(low_h);
                     
                 // 8xy3 - Vx ^= Vy
                 }else if(high_h == 0x08 && low_l == 0x03){
-                    hardware::registers.at(high & 0x0f) ^= hardware::registers.at(low >> 4);
+                    hardware::registers.at(high_l) ^= hardware::registers.at(low_h);
 
                 // 8xy4 - Vx += Vy; Vf = carry ? 1 : 0
                 }else if(high_h == 0x08 && low_l == 0x04){
-                    result = hardware::registers.at(high & 0x0f) + hardware::registers.at(low >> 4);
-                    hardware::registers.at(0xf) = result <= hardware::registers.at(high & 0xf) && hardware::registers.at(low >> 4) > 0 ? 0x01 : 0x00;
-                    hardware::registers.at(high & 0x0f) = result;
+                    uint8_t result;
+                    result = hardware::registers.at(high_l) + hardware::registers.at(low_h);
+                    hardware::registers.at(0xf) = result <= hardware::registers.at(high & 0xf) && hardware::registers.at(low_h) > 0 ? 0x01 : 0x00;
+                    hardware::registers.at(high_l) = result;
 
                 // 8xy5 - Vx -= Vy; Vf = borrow ? 0 : 1
                 }else if(high_h == 0x08 && low_l == 0x05){
-                    result = hardware::registers.at(high & 0x0f) - hardware::registers.at(low >> 4);
-                    hardware::registers.at(0xf) = result >= hardware::registers.at(high & 0xf) && hardware::registers.at(low >> 4) > 0 ? 0x00 : 0x01;
-                    hardware::registers.at(high & 0x0f) = result;
+                    uint8_t result;
+                    result = hardware::registers.at(high_l) - hardware::registers.at(low_h);
+                    hardware::registers.at(0xf) = result >= hardware::registers.at(high & 0xf) && hardware::registers.at(low_h) > 0 ? 0x00 : 0x01;
+                    hardware::registers.at(high_l) = result;
 
                 // 8xy6 - Vx = Vy >> 1; Vf = Vy & 0x01 
                 }else if(high_h == 0x08 && low_l == 0x06){
                     if constexpr(quirks::quirk_8xy6_8xye_shift_vx){
-                        hardware::registers.at(0xf) = hardware::registers.at(high & 0x0f) & 0x01;
-                        hardware::registers.at(high & 0x0f) = hardware::registers.at(high & 0x0f) >> 1;
+                        hardware::registers.at(0xf) = hardware::registers.at(high_l) & 0x01;
+                        hardware::registers.at(high_l) = hardware::registers.at(high_l) >> 1;
                     }else{
-                        hardware::registers.at(0xf) = hardware::registers.at(low >> 4) & 0x01;
-                        hardware::registers.at(high & 0x0f) = hardware::registers.at(low >> 4) >> 1;
+                        hardware::registers.at(0xf) = hardware::registers.at(low_h) & 0x01;
+                        hardware::registers.at(high_l) = hardware::registers.at(low_h) >> 1;
                     }
 
                 // 8xy7 - Vx = Vy - Vx; Vf = borrow ? 0 : 1
                 }else if(high_h == 0x08 && low_l == 0x07){
-                    result = hardware::registers.at(low >> 4) - hardware::registers.at(high & 0x0f);
-                    hardware::registers.at(0xf) = result >= hardware::registers.at(low >> 4) && hardware::registers.at(high & 0x0f) > 0 ? 0x00 : 0x01;
-                    hardware::registers.at(high & 0x0f) = result;
+                    uint8_t result;
+                    result = hardware::registers.at(low_h) - hardware::registers.at(high_l);
+                    hardware::registers.at(0xf) = result >= hardware::registers.at(low_h) && hardware::registers.at(high_l) > 0 ? 0x00 : 0x01;
+                    hardware::registers.at(high_l) = result;
 
                 // 8xye - Vx = Vy << 1; Vf = Vy & 0x80
                 }else if(high_h == 0x08 && low_l == 0x0e){
                     if constexpr(quirks::quirk_8xy6_8xye_shift_vx){
-                        hardware::registers.at(0xf) = hardware::registers.at(high & 0x0f) & 0x80;
-                        hardware::registers.at(high & 0x0f) = hardware::registers.at(high & 0x0f) << 1;
+                        hardware::registers.at(0xf) = hardware::registers.at(high_l) & 0x80;
+                        hardware::registers.at(high_l) = hardware::registers.at(high_l) << 1;
                     }else{
-                        hardware::registers.at(0xf) = hardware::registers.at(low >> 4) & 0x80;
-                        hardware::registers.at(high & 0x0f) = hardware::registers.at(low >> 4) << 1;
+                        hardware::registers.at(0xf) = hardware::registers.at(low_h) & 0x80;
+                        hardware::registers.at(high_l) = hardware::registers.at(low_h) << 1;
                     }
                 
                 // 9xy0 - skip if Vx != Vy
                 }else if(high_h == 0x09 && low_l == 0x00){
-                    if(hardware::registers.at(high & 0x0f) != hardware::registers.at(low >> 4)) hardware::pc += 2;
+                    if(hardware::registers.at(high_l) != hardware::registers.at(low_h)) hardware::pc += 2;
 
                 // annn - I = nnn
                 }else if(high_h == 0x0a){
-                    hardware::register_I = (((high & 0x0f) << 8) | low);
+                    hardware::register_I = ((high_l << 8) | low);
 
                 // bnnn - jump to nnn + V0
                 }else if(high_h == 0x0b){
                     if constexpr(quirks::quirk_bnnn_bxnn_use_vx){
-                        hardware::pc = (((high & 0x0f) << 8) | low) + hardware::registers.at(high & 0x0f);
+                        hardware::pc = ((high_l << 8) | low) + hardware::registers.at(high_l);
                     }else{
-                        hardware::pc = (((high & 0x0f) << 8) | low) + hardware::registers.at(0);
+                        hardware::pc = ((high_l << 8) | low) + hardware::registers.at(0);
                     }
 
                 // cxnn - Vx = random & nn
@@ -509,54 +509,54 @@ namespace chip8{
                 
                 // dxyn - draw n bytes at (Vx, Vy)
                 }else if(high_h == 0x0d){
-                    draw(f, (high & 0x0f), (low >> 4), (low & 0x0f));
+                    draw(f, high_l, low_h, low_l);
 
                 // ex9e - skip if pressed key == Vx
                 }else if(high_h == 0x0e && low == 0x9e){
-                    if(hardware::pressed_key == hardware::registers.at(high & 0x0f)) hardware::pc += 2;
+                    if(hardware::pressed_key == hardware::registers.at(high_l)) hardware::pc += 2;
 
                 // exa1 - skip if pressed key != Vx
                 }else if(high_h == 0x0e && low == 0xa1){
-                    if(hardware::pressed_key != hardware::registers.at(high & 0x0f)) hardware::pc += 2;
+                    if(hardware::pressed_key != hardware::registers.at(high_l)) hardware::pc += 2;
 
                 // fx07 - Vx = delay timer
                 }else if(high_h == 0x0f && low == 0x07){
-                    hardware::registers.at(high & 0x0f) = hardware::delay_timer;
+                    hardware::registers.at(high_l) = hardware::delay_timer;
                 
                 // fx0a - wait for keypress; Vx = key
                 }else if(high_h == 0x0f && low == 0x0a){
-                    hardware::waiting_for_key = (high & 0x0f);
+                    hardware::waiting_for_key = high_l;
 
                 // fx15 - delay timer = Vx
                 }else if(high_h == 0x0f && low == 0x15){
-                    hardware::delay_timer = hardware::registers.at(high & 0x0f);
+                    hardware::delay_timer = hardware::registers.at(high_l);
                 
                 // fx18 - sound timer = Vx
                 }else if(high_h == 0x0f && low == 0x18){
-                    hardware::sound_timer = hardware::registers.at(high & 0x0f);
+                    hardware::sound_timer = hardware::registers.at(high_l);
                     if(hardware::sound_timer > 1) f.set_audio_state(true);
                 
                 // fx1e - I += Vx
                 }else if(high_h == 0x0f && low == 0x1e){
-                    hardware::register_I += hardware::registers.at(high & 0x0f);
+                    hardware::register_I += hardware::registers.at(high_l);
                 
                 // fx29 - I = address of sprite of hex digit in Vx
                 }else if(high_h == 0x0f && low == 0x29){
-                    if(hardware::registers.at(high & 0x0f) < 0x10){
-                        hardware::register_I = hardware::registers.at(high & 0x0f) * 5;
-                    }else if(quirks::quirk_fx29_digits_highres && hardware::registers.at(high & 0x0f) >= 0x10 && hardware::registers.at(high & 0x0f) <= 0x19){
-                        hardware::register_I = 80 + (hardware::registers.at(high & 0x0f) & 0x0f) * 10;
+                    if(hardware::registers.at(high_l) < 0x10){
+                        hardware::register_I = hardware::registers.at(high_l) * 5;
+                    }else if(quirks::quirk_fx29_digits_highres && hardware::registers.at(high_l) >= 0x10 && hardware::registers.at(high_l) <= 0x19){
+                        hardware::register_I = 80 + (hardware::registers.at(high_l) & 0x0f) * 10;
                     }else{
                         throw std::runtime_error("invalid usage of opcode fx29");
                     }
                 
                 // fx33 - memory[I, I+1, I+2] = BCD of Vx
                 }else if(high_h == 0x0f && low == 0x33){
-                    bcd_of_v(high & 0x0f);
+                    bcd_of_v(high_l);
 
                 // fx55 - store V0 to Vx in memory starting at I; I = I + x + 1
                 }else if(high_h == 0x0f && low == 0x55){
-                    for(uint8_t i = 0; i <= (high & 0x0f); i++){
+                    for(uint8_t i = 0; i <= (high_l); i++){
                         hardware::memory.at(hardware::register_I) = hardware::registers.at(i);
                         hardware::register_I++;
                     }
@@ -564,11 +564,11 @@ namespace chip8{
                     if constexpr(quirks::quirk_fx55_fx65_increment_less)
                         hardware::register_I--;
                     else if constexpr(quirks::quirk_fx55_fx65_no_increment)
-                        hardware::register_I -= ((high & 0x0f) + 1);
+                        hardware::register_I -= (high_l + 1);
 
                 // fx65 - load V0 to Vx from memory starting at I; I = I + x + 1
                 }else if(high_h == 0x0f && low == 0x65){
-                    for(uint8_t i = 0; i <= (high & 0x0f); i++){
+                    for(uint8_t i = 0; i <= high_l; i++){
                         hardware::registers.at(i) = hardware::memory.at(hardware::register_I);
                         hardware::register_I++;
                     }
@@ -576,7 +576,7 @@ namespace chip8{
                     if constexpr(quirks::quirk_fx55_fx65_increment_less)
                         hardware::register_I--;
                     else if constexpr(quirks::quirk_fx55_fx65_no_increment)
-                        hardware::register_I -= ((high & 0x0f) + 1);
+                        hardware::register_I -= (high_l + 1);
 
                 }else{
                     throw std::runtime_error("unkown opcode");

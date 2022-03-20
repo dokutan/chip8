@@ -2,6 +2,8 @@
 #include <chrono>
 #include <fstream>
 #include <stack>
+#include <cstdlib>
+#include <ctime>
 
 namespace chip8{
     template<size_t memory_size, int t_screen_x, int t_screen_y, bool t_allow_high_res> class chip8_hardware {
@@ -106,6 +108,8 @@ namespace chip8{
                 for(size_t i = 80; i < big_font.size(); i++){
                     memory.at(i) = big_font.at(i);
                 }
+
+                std::srand(std::time(nullptr));
 
                 timer_start = std::chrono::steady_clock::now();
             }
