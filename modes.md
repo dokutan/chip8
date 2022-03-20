@@ -19,10 +19,10 @@ opcode | description | note
 1nnn | jump to nnn |
 2nnn | call subroutine at nnn |
 3xnn | skip if Vx == nn |
-3xnn | skip if Vx != nn |
+4xnn | skip if Vx != nn |
 5xy0 | skip if Vx == Vy |
 6xnn | Vx = nn |
-6xnn | Vx += nn |
+7xnn | Vx += nn |
 8xy0 | Vx = Vy |
 8xy1 | Vx |= Vy |
 8xy2 | Vx &= Vy |
@@ -32,7 +32,7 @@ opcode | description | note
 8xy6 | Vx = Vy >> 1; Vf = Vy & 0x01 |
 8xy7 | Vx = Vy - Vx; Vf = borrow ? 0 : 1 |
 8xye | Vx = Vy << 1; Vf = Vy & 0x80 |
-5xy0 | skip if Vx != Vy |
+9xy0 | skip if Vx != Vy |
 annn | I = nnn |
 bnnn | jump to nnn + V0 |
 cxnn | Vx = random & nn |
