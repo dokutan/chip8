@@ -146,7 +146,7 @@ namespace chip8{
             /// execute one instruction at pc and increment pc
             template<class frontend> int execute(frontend &f){
                 int return_value = 1;
-                bool matched_opcode = false;
+                bool matched_opcode;
 
                 // decrement timers
                 std::chrono::time_point<std::chrono::steady_clock> timer_now = std::chrono::steady_clock::now();
@@ -384,6 +384,19 @@ namespace chip8{
                     if(matched_opcode) return return_value;
                 }
 
+                if constexpr(instruction_set::fxf2_set_rd0){
+                    matched_opcode = true;
+
+                    // fxf2 - set the RD.0 register to x
+                    if(high_h == 0x0f && low == 0xf2){
+                        hardware::register_rd0 = high_l;
+
+                    }else{
+                        matched_opcode = false;
+                    }
+                    if(matched_opcode) return return_value;
+                }
+
                 // 00e0 - clear screen
                 if(opcode == 0x00e0){
                     for(auto &i : hardware::screen_content){
@@ -556,7 +569,7 @@ namespace chip8{
 
                 // fx55 - store V0 to Vx in memory starting at I; I = I + x + 1
                 }else if(high_h == 0x0f && low == 0x55){
-                    for(uint8_t i = 0; i <= (high_l); i++){
+                    for(uint8_t i = (quirks::quirk_fx55_fx65_use_rd0 ? hardware::register_rd0 : 0); i <= (high_l); i++){
                         hardware::memory.at(hardware::register_I) = hardware::registers.at(i);
                         hardware::register_I++;
                     }
@@ -568,7 +581,7 @@ namespace chip8{
 
                 // fx65 - load V0 to Vx from memory starting at I; I = I + x + 1
                 }else if(high_h == 0x0f && low == 0x65){
-                    for(uint8_t i = 0; i <= high_l; i++){
+                    for(uint8_t i = (quirks::quirk_fx55_fx65_use_rd0 ? hardware::register_rd0 : 0); i <= high_l; i++){
                         hardware::registers.at(i) = hardware::memory.at(hardware::register_I);
                         hardware::register_I++;
                     }
@@ -586,11 +599,12 @@ namespace chip8{
             }
     };
 
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false>> chip8;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false>, quirks_chip8, chip8_hardware<4096, 128, 64, false>> chip10;
-    typedef chip8_interpreter<chip8_instruction_set<true, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false>> chip8e;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false>, quirks_chip48, chip8_hardware<4096, 64, 32, false>> chip48;
-    typedef chip8_interpreter<chip8_instruction_set<false, true, false>, quirks_schip10, chip8_hardware<4096, 128, 64, true>> schip10;
-    typedef chip8_interpreter<chip8_instruction_set<false, true, true>, quirks_schip11, chip8_hardware<4096, 128, 64, true>> schip11;
-    typedef chip8_interpreter<chip8_instruction_set<false, true, true>, quirks_schpc, chip8_hardware<4096, 128, 64, true>> schpc;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false>> chip8;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false>, quirks_chip8, chip8_hardware<4096, 128, 64, false>> chip10;
+    typedef chip8_interpreter<chip8_instruction_set<true,  false, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false>> chip8e;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true >, quirks_chip8_save_restore, chip8_hardware<4096, 64, 32, false>> chip8_save_restore;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false>, quirks_chip48, chip8_hardware<4096, 64, 32, false>> chip48;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false>, quirks_schip10, chip8_hardware<4096, 128, 64, true>> schip10;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false>, quirks_schip11, chip8_hardware<4096, 128, 64, true>> schip11;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false>, quirks_schpc, chip8_hardware<4096, 128, 64, true>> schpc;
 }

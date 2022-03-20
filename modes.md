@@ -80,6 +80,14 @@ fx4f | delay timer = Vx; wait until the delay timer reaches 0 |
 fxe3 | wait for strobe at EF4; read Vx from input port 3 | not implemented
 fxe7 | read Vx from input port 3 | not implemented
 
+## CHIP-8 modification for saving and restoring variables (chip8_save_restore)
+https://chip-8.github.io/extensions/#chip-8-modification-for-saving-and-restoring-variables
+https://github.com/mattmikolay/viper/blob/master/volume1/issue10.pdf
+
+Based on CHIP-8, added the fxf2 instruction to allow the following combinations:
+- fxf2 + fy55: store Vx to Vy in memory starting at I; I = I + x + 1
+- fxf2 + fy65: load Vx to Vy from memory starting at I; I = I + x + 1
+
 ## CHIP-48 (chip48)
 
 Same opcodes as CHIP-8, but with quirks.

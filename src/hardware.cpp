@@ -51,6 +51,9 @@ namespace chip8{
 
             // flag registers (used only for e.g. SUPER-CHIP)
             std::array<uint8_t, 8> flag_registers;
+
+            // RD.0 register
+            uint8_t register_rd0;
             
             // timers
             static constexpr int timer_delay = 1000000 / 60; // microseconds
@@ -94,6 +97,7 @@ namespace chip8{
                 memory.fill(0x00);
                 registers.fill(0x00);
                 flag_registers.fill(0x00);
+                register_rd0 = 0x00;
                 
                 for(auto &i : screen_content){
                     i.fill(0x00);

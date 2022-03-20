@@ -5,7 +5,8 @@ namespace chip8{
     template<
         bool t_chip8e,
         bool t_super_chip_1_0,
-        bool t_super_chip_1_1
+        bool t_super_chip_1_1,
+        bool t_fxf2_set_rd0
     > class chip8_instruction_set{
         public:
             /// the CHIP-8E extension
@@ -14,5 +15,7 @@ namespace chip8{
             static constexpr bool super_chip_1_0 = t_super_chip_1_0;
             /// the SUPER-CHIP 1.1 extension (without SUPER-CHIP 1.0 opcodes)
             static constexpr bool super_chip_1_1 = t_super_chip_1_1;
+            /// fxf2 instruction: set the RD.0 register to x
+            static constexpr bool fxf2_set_rd0 = t_fxf2_set_rd0;
     };
 }
