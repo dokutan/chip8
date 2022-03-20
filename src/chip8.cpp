@@ -63,8 +63,12 @@ int main(int argc, char* argv[]){
             run<chip8::chip8e, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "chip48") == 0){
             run<chip8::chip48, frontend_sdl>(argv[2]);
-        }else if(std::strcmp(argv[1], "chip8_save_restore") == 0){
-            run<chip8::chip8_save_restore, frontend_sdl>(argv[2]);
+        }else if(std::strcmp(argv[1], "chip8_fxf2_fx55_fx65") == 0){
+            run<chip8::chip8_fxf2_fx55_fx65, frontend_sdl>(argv[2]);
+        }else if(std::strcmp(argv[1], "chip8_fxf2_bnnn") == 0){
+            run<chip8::chip8_fxf2_bnnn, frontend_sdl>(argv[2]);
+        }else if(std::strcmp(argv[1], "chip8_fxf2") == 0){
+            run<chip8::chip8_fxf2, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "schip10") == 0){
             run<chip8::schip10, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "schip11") == 0){

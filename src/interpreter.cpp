@@ -512,6 +512,8 @@ namespace chip8{
                 }else if(high_h == 0x0b){
                     if constexpr(quirks::quirk_bnnn_bxnn_use_vx){
                         hardware::pc = ((high_l << 8) | low) + hardware::registers.at(high_l);
+                    }else if constexpr(quirks::quirk_bnnn_use_rd0){
+                        hardware::pc = ((high_l << 8) | low) + hardware::registers.at(hardware::register_rd0);
                     }else{
                         hardware::pc = ((high_l << 8) | low) + hardware::registers.at(0);
                     }
@@ -602,7 +604,9 @@ namespace chip8{
     typedef chip8_interpreter<chip8_instruction_set<false, false, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false>> chip8;
     typedef chip8_interpreter<chip8_instruction_set<false, false, false, false>, quirks_chip8, chip8_hardware<4096, 128, 64, false>> chip10;
     typedef chip8_interpreter<chip8_instruction_set<true,  false, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false>> chip8e;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true >, quirks_chip8_save_restore, chip8_hardware<4096, 64, 32, false>> chip8_save_restore;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true >, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<4096, 64, 32, false>> chip8_fxf2_fx55_fx65;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true >, quirks_chip8_fxf2_bnnn, chip8_hardware<4096, 64, 32, false>> chip8_fxf2_bnnn;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true >, quirks_chip8_fxf2, chip8_hardware<4096, 64, 32, false>> chip8_fxf2;
     typedef chip8_interpreter<chip8_instruction_set<false, false, false, false>, quirks_chip48, chip8_hardware<4096, 64, 32, false>> chip48;
     typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false>, quirks_schip10, chip8_hardware<4096, 128, 64, true>> schip10;
     typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false>, quirks_schip11, chip8_hardware<4096, 128, 64, true>> schip11;

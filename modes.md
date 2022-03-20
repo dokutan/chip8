@@ -80,13 +80,27 @@ fx4f | delay timer = Vx; wait until the delay timer reaches 0 |
 fxe3 | wait for strobe at EF4; read Vx from input port 3 | not implemented
 fxe7 | read Vx from input port 3 | not implemented
 
-## CHIP-8 modification for saving and restoring variables (chip8_save_restore)
+## CHIP-8 modification for saving and restoring variables (chip8_fxf2_fx55_fx65)
 https://chip-8.github.io/extensions/#chip-8-modification-for-saving-and-restoring-variables
 https://github.com/mattmikolay/viper/blob/master/volume1/issue10.pdf
 
-Based on CHIP-8, added the fxf2 instruction to allow the following combinations:
+Extension to CHIP-8 by John Bennett, adds the fxf2 instruction to allow the following combinations:
 - fxf2 + fy55: store Vx to Vy in memory starting at I; I = I + x + 1
 - fxf2 + fy65: load Vx to Vy from memory starting at I; I = I + x + 1
+
+## CHIP-8 with improved BNNN (chip8_fxf2_bnnn)
+https://chip-8.github.io/extensions/#chip-8-with-improved-bnnn
+https://github.com/mattmikolay/viper/blob/master/volume2/issue8_9.pdf
+
+Extension to CHIP-8 by George Ziniewicz, adds the fxf2 instruction to allow the following combination:
+- fxf2 + bnnn: jump to nnn + Vx
+
+## CHIP-8 with FXF2 (chip8_fxf2)
+
+A combination of chip8_fxf2_fx55_fx65 and chip8_fxf2_bnnn:
+- fxf2 + fy55: store Vx to Vy in memory starting at I; I = I + x + 1
+- fxf2 + fy65: load Vx to Vy from memory starting at I; I = I + x + 1
+- fxf2 + bnnn: jump to nnn + Vx
 
 ## CHIP-48 (chip48)
 
