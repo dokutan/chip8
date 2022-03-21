@@ -6,7 +6,7 @@
 #include <ctime>
 
 namespace chip8{
-    template<size_t memory_size, int t_screen_x, int t_screen_y, bool t_allow_high_res, class palette_t> class chip8_hardware {
+    template<size_t memory_size, uint16_t program_start, int t_screen_x, int t_screen_y, bool t_allow_high_res, class palette_t> class chip8_hardware {
 
         friend palette_t;
 
@@ -79,7 +79,7 @@ namespace chip8{
             palette_t palette;
             
             // program counter
-            uint16_t pc = 0x200;
+            uint16_t pc = program_start;
             
             // call stack (for returning from subroutines)
             std::stack< uint16_t > call_stack;

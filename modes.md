@@ -146,8 +146,13 @@ https://chip-8.github.io/extensions/#schip-compatibility-schpc-and-gchip-compati
 - Same as SUPER-CHIP 1.1, but all instructions behave as in CHIP-8
 
 ## CHIP-8X (chip8x)
+https://chip-8.github.io/extensions/#chip-8x
+https://github.com/trapexit/chip-8_documentation/blob/master/Misc/VP580%2C%20VP585%2C%20VP590%2C%20VP595%20Instruction%20Manual%20Including%20CHIP-8X.pdf
 
 This extension adds instructions to control the Color Card, Simple Sound and expansion hex keyboard.
+
+- Programs start at 0x0300
+- bnnn is unavailable (replaced with the bxyn instruction)
 
 background colors: blue (default), black, green, red
 

@@ -36,7 +36,16 @@ namespace chip8{
             /// returns the color of the pixel at (x, y)
             template<class hardware> std::array<uint8_t, 3> color(hardware hw, int x, int y){
                 if(hw->screen_content.at(y).at(x)){
-                    return white;
+                    switch(hw->screen_fg_color.at(y).at(x)){
+                        case 0: return black; break;
+                        case 1: return red; break;
+                        case 2: return blue; break;
+                        case 3: return violet; break;
+                        case 4: return green; break;
+                        case 5: return yellow; break;
+                        case 6: return aqua; break;
+                        default: return white;
+                    }
                 }
 
                 return bg_color(hw);

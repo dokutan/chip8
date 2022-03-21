@@ -233,7 +233,7 @@ namespace chip8{
 
                     // fx03 - send Vx to output port 3 (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0x03){
-                        throw std::runtime_error("opcode fx03 not implemented");
+                        throw std::runtime_error("opcode fx03 is not implemented");
                     
                     // fx1b - skip Vx bytes (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0x1b){
@@ -246,11 +246,11 @@ namespace chip8{
                     
                     // fxe3 - wait for strobe at EF4; read Vx from input port 3 (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0xe3){
-                        throw std::runtime_error("opcode fxe3 not implemented");
+                        throw std::runtime_error("opcode fxe3 is not implemented");
                     
                     // fxe7 - read Vx from input port 3 (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0xe7){
-                        throw std::runtime_error("opcode fxe7 not implemented");
+                        throw std::runtime_error("opcode fxe7 is not implemented");
 
                     }else{
                         matched_opcode = false;
@@ -404,10 +404,66 @@ namespace chip8{
                 if constexpr(instruction_set::chip8x){
                     matched_opcode = true;
                     
-                    // 02a0 - step background color
+                    // 02a0 - step background color (CHIP-8X)
                     if(opcode == 0x02a0){
                         hardware::screen_bg_color = (hardware::screen_bg_color + 1) % 4;
+                        for(int y = 0; y < hardware::screen_y; y++){
+                            for(int x = 0; x < hardware::screen_x; x++){
+                                if(!hardware::screen_get(x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
+                            }
+                        }
+                    
+                    // 5xy1
+                    }else if(high_h == 0x05 && low_l == 0x01){
 
+                    // bxy0 - set foreground color in area given by Vx and Vx+1 to Vy
+                    }else if(high_h == 0x0b && low_l == 0x00){
+                        // size of the zones
+                        constexpr int zone_x = hardware::screen_x / 8;
+                        constexpr int zone_y = hardware::screen_y / 8;
+
+                        // start coordinates
+                        int x0 = (hardware::registers.at(high_l) & 0x0f) * zone_x;
+                        int y0 = (hardware::registers.at((high_l + 1) % hardware::registers.size()) & 0x0f) * zone_y;
+
+                        // end coordinates
+                        int x1 = x0 + zone_x + (hardware::registers.at(high_l) >> 4) * zone_x;
+                        int y1 = y0 + zone_y + (hardware::registers.at((high_l + 1) % hardware::registers.size()) >> 4) * zone_y;
+
+                        uint8_t color = hardware::registers.at(low_h);
+                        if(color > 8){
+                            throw std::runtime_error("invalid usage of opcode bxy0");
+                        }
+                        
+                        for(int x = x0; x < x1; x++){
+                            if(x >= hardware::screen_x) break;
+
+                            for(int y = y0; y < y1; y++){
+                                if(y >= hardware::screen_y) break;
+
+                                hardware::screen_fg_color.at(y).at(x) = color;
+                                if(hardware::screen_get(x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
+                            }
+                        }
+                        
+                    // bxyn
+                    }else if(high_h == 0x0b){
+
+                    // exf2 - skip if pressed key on keyboard 2 == Vx (CHIP-8X)
+                    }else if(high_h == 0x0e && low == 0xf2){
+                    
+                    // exf5 - skip if pressed key on keyboard 2 != Vx (CHIP-8X)
+                    }else if(high_h == 0x0e && low == 0xf5){
+
+                    
+                    // fxf8 - output Vx to port (set sound frequency) (CHIP-8X)
+                    }else if(high_h == 0x0f && low == 0xf8){
+
+
+                    // fxfb - wait for input from port and store it in Vx (CHIP-8X)
+                    }else if(high_h == 0x0f && low == 0xfb){
+                        throw std::runtime_error("opcode fxfb is not implemented");
+                    
                     }else{
                         matched_opcode = false;
                     }
@@ -429,7 +485,7 @@ namespace chip8{
                 
                 // 0nnn - call machine language subroutine at nnn
                 }else if(high_h == 0x00){
-                    throw std::runtime_error("opcode 0nnn not implemented");
+                    throw std::runtime_error("opcode 0nnn is not implemented");
                 
                 // 1nnn - jump to nnn
                 }else if(high_h == 0x01){
@@ -618,15 +674,15 @@ namespace chip8{
             }
     };
 
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false, chip8_palette>> chip8;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 128, 64, false, chip8_palette>> chip10;
-    typedef chip8_interpreter<chip8_instruction_set<true,  false, false, false, false>, quirks_chip8, chip8_hardware<4096, 64, 32, false, chip8_palette>> chip8e;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true,  false>, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<4096, 64, 32, false, chip8_palette>> chip8_fxf2_fx55_fx65;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true,  false>, quirks_chip8_fxf2_bnnn, chip8_hardware<4096, 64, 32, false, chip8_palette>> chip8_fxf2_bnnn;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true,  false>, quirks_chip8_fxf2, chip8_hardware<4096, 64, 32, false, chip8_palette>> chip8_fxf2;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false>, quirks_chip48, chip8_hardware<4096, 64, 32, false, chip8_palette>> chip48;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false, false>, quirks_schip10, chip8_hardware<4096, 128, 64, true, chip8_palette>> schip10;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false>, quirks_schip11, chip8_hardware<4096, 128, 64, true, chip8_palette>> schip11;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false>, quirks_schpc, chip8_hardware<4096, 128, 64, true, chip8_palette>> schpc;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true >, quirks_chip8, chip8_hardware<4096, 64, 32, false, chip8x_palette>> chip8x;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 128, 64, false, chip8_palette>> chip10;
+    typedef chip8_interpreter<chip8_instruction_set<true,  false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8e;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true,  false>, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8_fxf2_fx55_fx65;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true,  false>, quirks_chip8_fxf2_bnnn, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8_fxf2_bnnn;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, true,  false>, quirks_chip8_fxf2, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8_fxf2;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false>, quirks_chip48, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip48;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false, false>, quirks_schip10, chip8_hardware<4096, 0x200, 128, 64, true, chip8_palette>> schip10;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 128, 64, true, chip8_palette>> schip11;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false>, quirks_schpc, chip8_hardware<4096, 0x200, 128, 64, true, chip8_palette>> schpc;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true >, quirks_chip8, chip8_hardware<4096, 0x300, 64, 32, false, chip8x_palette>> chip8x;
 }
