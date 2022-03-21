@@ -14,6 +14,7 @@
 #include "instruction_set.cpp"
 #include "quirks.cpp"
 #include "hardware.cpp"
+#include "palette.cpp"
 #include "interpreter.cpp"
 #include "frontend_sdl.cpp"
 
@@ -28,6 +29,7 @@ template<class chip8_class, class frontend_class> void run(char* filename){
     }
 
     frontend_class f(c8.get_screen_x(), c8.get_screen_y(), 10, 60);
+    c8.frontend_init(f);
 
     while(1){
         clock_start = std::chrono::steady_clock::now();
@@ -75,6 +77,8 @@ int main(int argc, char* argv[]){
             run<chip8::schip11, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "schpc") == 0){
             run<chip8::schpc, frontend_sdl>(argv[2]);
+        }else if(std::strcmp(argv[1], "chip8x") == 0){
+            run<chip8::chip8x, frontend_sdl>(argv[2]);
         }else{
             throw std::runtime_error(std::string("unknown mode ") + argv[1]);
         }

@@ -6,7 +6,10 @@
 #include <ctime>
 
 namespace chip8{
-    template<size_t memory_size, int t_screen_x, int t_screen_y, bool t_allow_high_res> class chip8_hardware {
+    template<size_t memory_size, int t_screen_x, int t_screen_y, bool t_allow_high_res, class palette_t> class chip8_hardware {
+
+        friend palette_t;
+
         protected:
             static constexpr std::array<uint8_t, 80> font = {{
                 0xf0, 0x90, 0x90, 0x90, 0xf0,
@@ -67,6 +70,13 @@ namespace chip8{
             std::array<std::array<uint8_t, screen_x>, screen_y> screen_content;
             static const bool allow_high_res = t_allow_high_res;
             bool high_res = false; // high resolution mode for SUPER-CHIP
+
+            // foreground and background color for CHIP-8X
+            std::array<std::array<uint8_t, screen_x>, screen_y> screen_fg_color;
+            uint8_t screen_bg_color;
+
+            // color palette
+            palette_t palette;
             
             // program counter
             uint16_t pc = 0x200;
@@ -85,11 +95,7 @@ namespace chip8{
             template<class frontend> void screen_set(size_t x, size_t y, uint8_t value, frontend &f){
                 screen_content.at(y).at(x) = value;
 
-                if(value){
-                    f.draw(x, y, 0xff, 0xff, 0xff);
-                }else{
-                    f.draw(x, y, 0x00, 0x00, 0x00);
-                }
+                f.draw(x, y, palette.color(this, x, y));
             }
         
         public:
@@ -112,6 +118,12 @@ namespace chip8{
                 for(size_t i = 80; i < big_font.size(); i++){
                     memory.at(i) = big_font.at(i);
                 }
+
+                // screen colors
+                for(auto &i : screen_fg_color){
+                    i.fill(0x07);
+                }
+                screen_bg_color = 0x00;
 
                 std::srand(std::time(nullptr));
 

@@ -145,3 +145,20 @@ https://chip-8.github.io/extensions/#schip-compatibility-schpc-and-gchip-compati
 
 - Same as SUPER-CHIP 1.1, but all instructions behave as in CHIP-8
 
+## CHIP-8X (chip8x)
+
+This extension adds instructions to control the Color Card, Simple Sound and expansion hex keyboard.
+
+background colors: blue (default), black, green, red
+
+foreground colors:
+value | color
+---|---
+0 | black
+1 | red
+2 | blue
+3 | violet
+4 | green
+5 | yellow
+6 | aqua
+7 | white (default)
