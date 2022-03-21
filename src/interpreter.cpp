@@ -413,10 +413,13 @@ namespace chip8{
                             }
                         }
                     
-                    // 5xy1
+                    // 5xy1 - for each nibble in Vx, Vy: Vx = (Vx + Vy) % 8 (CHIP-8X)
                     }else if(high_h == 0x05 && low_l == 0x01){
+                        uint8_t result1 = ((hardware::registers.at(high_l) >> 4) + (hardware::registers.at(low_h) >> 4)) % 8;
+                        uint8_t result2 = ((hardware::registers.at(high_l) & 0x0f) + (hardware::registers.at(low_h) & 0x0f)) % 8;
+                        hardware::registers.at(high_l) = (result1 << 4) | result2;
 
-                    // bxy0 - set foreground color in area given by Vx and Vx+1 to Vy
+                    // bxy0 - set foreground color in area given by Vx and Vx+1 to Vy (CHIP-8X)
                     }else if(high_h == 0x0b && low_l == 0x00){
                         // size of the zones
                         constexpr int zone_x = hardware::screen_x / 8;
@@ -446,8 +449,27 @@ namespace chip8{
                             }
                         }
                         
-                    // bxyn
+                    // bxyn - set foreground color at Vx,Vx+1 for n rows to Vy (CHIP-8X)
                     }else if(high_h == 0x0b){
+                        // start coordinates
+                        int x0 = hardware::registers.at(high_l);
+                        int y0 = hardware::registers.at((high_l + 1) % hardware::registers.size());
+
+                        uint8_t color = hardware::registers.at(low_h);
+                        if(color > 8){
+                            throw std::runtime_error("invalid usage of opcode bxyn");
+                        }
+                        
+                        for(int x = x0; x < x0 + 8; x++){
+                            if(x >= hardware::screen_x) break;
+
+                            for(int y = y0; y < y0 + low_l; y++){
+                                if(y >= hardware::screen_y) break;
+
+                                hardware::screen_fg_color.at(y).at(x) = color;
+                                if(hardware::screen_get(x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
+                            }
+                        }
 
                     // exf2 - skip if pressed key on keyboard 2 == Vx (CHIP-8X)
                     }else if(high_h == 0x0e && low == 0xf2){
