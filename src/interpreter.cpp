@@ -315,17 +315,13 @@ namespace chip8{
                             hardware::screen_content.at(y) = hardware::screen_content.at(y - low_l);
                             
                             for(int x = 0; x < hardware::screen_content.at(y).size(); x++){
-                                if(hardware::screen_content.at(y).at(x)){
-                                    f.draw(x, y, 0xff, 0xff, 0xff);
-                                }else{
-                                    f.draw(x, y, 0x00, 0x00, 0x00);
-                                }
+                                f.draw(x, y, hardware::palette.color(this, x, y));
                             }
                         }
                         for(int y = 0; y < low_l; y++){
                             hardware::screen_content.at(y).fill(0x00);
                             for(int x = 0; x < hardware::screen_content.at(y).size(); x++){
-                                f.draw(x, y, 0x00, 0x00, 0x00);
+                                f.draw(x, y, hardware::palette.color(this, x, y));
                             }
                         }
                     
@@ -335,13 +331,7 @@ namespace chip8{
                             int x = hardware::screen_content.at(y).size() - 5;
                             while(x >= 0){
                                 hardware::screen_content.at(y).at(x + 4) = hardware::screen_content.at(y).at(x);
-                                
-                                if(hardware::screen_content.at(y).at(x + 4)){
-                                    f.draw(x + 4, y, 0xff, 0xff, 0xff);
-                                }else{
-                                    f.draw(x + 4, y, 0x00, 0x00, 0x00);
-                                }
-
+                                f.draw(x + 4, y, hardware::palette.color(this, x + 4, y));
                                 x--;
                             }
 
@@ -349,10 +339,10 @@ namespace chip8{
                             hardware::screen_content.at(y).at(1) = 0x00;
                             hardware::screen_content.at(y).at(2) = 0x00;
                             hardware::screen_content.at(y).at(3) = 0x00;
-                            f.draw(0, y, 0x00, 0x00, 0x00);
-                            f.draw(1, y, 0x00, 0x00, 0x00);
-                            f.draw(2, y, 0x00, 0x00, 0x00);
-                            f.draw(3, y, 0x00, 0x00, 0x00);
+                            f.draw(0, y, hardware::palette.color(this, 0, y));
+                            f.draw(1, y, hardware::palette.color(this, 1, y));
+                            f.draw(2, y, hardware::palette.color(this, 2, y));
+                            f.draw(3, y, hardware::palette.color(this, 3, y));
                         }
                     
                     // 00fc - scroll display 4 pixels left (SUPER-CHIP 1.1)
@@ -361,13 +351,7 @@ namespace chip8{
                             int x = 4;
                             while(x < hardware::screen_content.at(y).size()){
                                 hardware::screen_content.at(y).at(x - 4) = hardware::screen_content.at(y).at(x);
-                                
-                                if(hardware::screen_content.at(y).at(x - 4)){
-                                    f.draw(x - 4, y, 0xff, 0xff, 0xff);
-                                }else{
-                                    f.draw(x - 4, y, 0x00, 0x00, 0x00);
-                                }
-
+                                f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
                                 x++;
                             }
 
@@ -375,10 +359,10 @@ namespace chip8{
                             hardware::screen_content.at(y).at(x - 3) = 0x00;
                             hardware::screen_content.at(y).at(x - 2) = 0x00;
                             hardware::screen_content.at(y).at(x - 1) = 0x00;
-                            f.draw(x - 4, y, 0x00, 0x00, 0x00);
-                            f.draw(x - 3, y, 0x00, 0x00, 0x00);
-                            f.draw(x - 2, y, 0x00, 0x00, 0x00);
-                            f.draw(x - 1, y, 0x00, 0x00, 0x00);
+                            f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
+                            f.draw(x - 3, y, hardware::palette.color(this, x - 3, y));
+                            f.draw(x - 2, y, hardware::palette.color(this, x - 2, y));
+                            f.draw(x - 1, y, hardware::palette.color(this, x - 1, y));
                         }
                     
                     // fx30 - I = address of large sprite of digit in Vx (SUPER-CHIP 1.1)
@@ -480,9 +464,11 @@ namespace chip8{
 
                     // exf2 - skip if key Vx is pressed on keyboard 2 == Vx (CHIP-8X)
                     }else if(high_h == 0x0e && low == 0xf2){
+                        if(hardware::keyboard_2.at(hardware::registers.at(high_l))) hardware::pc += 2;
                     
                     // exf5 - skip if key Vx is not pressed on keyboard 2 == Vx (CHIP-8X)
                     }else if(high_h == 0x0e && low == 0xf5){
+                        if(!hardware::keyboard_2.at(hardware::registers.at(high_l))) hardware::pc += 2;
 
                     
                     // fxf8 - output Vx to port (set sound frequency) (CHIP-8X)

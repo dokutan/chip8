@@ -174,18 +174,6 @@ class frontend_sdl{
                 }
             }
         }
-        
-        [[deprecated]]
-        void draw(int x, int y, uint8_t r, uint8_t g, uint8_t b){
-            SDL_Rect rect;
-            rect.x = x * scale;
-            rect.y = y * scale;
-            rect.w = scale;
-            rect.h = scale;
-
-            SDL_SetRenderDrawColor(sdl_renderer, r, g, b, 0x00);
-            SDL_RenderFillRect(sdl_renderer, &rect);
-        }
 
         void draw(int x, int y, std::array<uint8_t, 3> color){
             SDL_Rect rect;
@@ -196,12 +184,6 @@ class frontend_sdl{
 
             SDL_SetRenderDrawColor(sdl_renderer, color.at(0), color.at(1), color.at(2), 0x00);
             SDL_RenderFillRect(sdl_renderer, &rect);
-        }
-
-        [[deprecated]]
-        void clear(uint8_t r, uint8_t g, uint8_t b){
-            SDL_SetRenderDrawColor(sdl_renderer, r, g, b, 0x00);
-            SDL_RenderClear(sdl_renderer);
         }
 
         void clear(std::array<uint8_t, 3> color){
