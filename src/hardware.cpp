@@ -85,7 +85,7 @@ namespace chip8{
             std::stack< uint16_t > call_stack;
 
             // currently pressed key
-            int pressed_key = -1;
+            std::array<bool, 16> keyboard_1, keyboard_2;
             int waiting_for_key = -1;
 
             uint8_t screen_get(size_t x, size_t y){
@@ -125,6 +125,9 @@ namespace chip8{
                 }
                 screen_bg_color = 0x00;
 
+                keyboard_1.fill(false);
+                keyboard_2.fill(false);
+
                 std::srand(std::time(nullptr));
 
                 timer_start = std::chrono::steady_clock::now();
@@ -147,8 +150,12 @@ namespace chip8{
                 return 0;
             }
 
-            void set_key(int key){
-                pressed_key = key;
+            void set_key(int keyboard, int key, bool pressed){
+                if(keyboard == 1){
+                    keyboard_1.at(key) = pressed;
+                }else if(keyboard == 2){
+                    keyboard_2.at(key) = pressed;
+                }
             }
 
             int get_screen_x(){

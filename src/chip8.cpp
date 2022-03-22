@@ -35,8 +35,9 @@ template<class chip8_class, class frontend_class> void run(char* filename){
         clock_start = std::chrono::steady_clock::now();
         
         // handle input
-        c8.set_key(f.get_key());
+        f.poll_event();
         if(f.get_quit_requested()) break;
+        f.get_keys(c8);
         
         // execute one opcode
         if(!c8.execute(f)) break;
@@ -45,7 +46,7 @@ template<class chip8_class, class frontend_class> void run(char* filename){
         f.refresh();
 
         // wait
-        std::this_thread::sleep_until(clock_start + 2000 * 1us);
+        std::this_thread::sleep_until(clock_start + 1500 * 1us);
     }
 }
 

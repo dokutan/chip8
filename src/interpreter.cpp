@@ -161,12 +161,19 @@ namespace chip8{
                     hardware::sound_timer = hardware::sound_timer > 0 ? hardware::sound_timer - 1 : 0;
                 }
 
-                // do nothing if we are waiting for a keypress
-                if(hardware::waiting_for_key >= 0 && hardware::pressed_key < 0){
-                    return return_value;
-                }else if(hardware::waiting_for_key >= 0){
-                    hardware::registers.at(hardware::waiting_for_key) = hardware::pressed_key;
-                    hardware::waiting_for_key = -1;
+                // do nothing if we are waiting for a keypress (on keyboard 1)
+                if(hardware::waiting_for_key >= 0){
+                    int key = -1;
+                    for(int i = 0; i < hardware::keyboard_1.size(); i++){
+                        if(hardware::keyboard_1.at(i)) key = i;
+                    }
+                    
+                    if(key < 0){
+                        return return_value;
+                    }else{
+                        hardware::registers.at(hardware::waiting_for_key) = key;
+                        hardware::waiting_for_key = -1;
+                    }
                 }
 
                 // or waiting for the timer to reach 0
@@ -471,10 +478,10 @@ namespace chip8{
                             }
                         }
 
-                    // exf2 - skip if pressed key on keyboard 2 == Vx (CHIP-8X)
+                    // exf2 - skip if key Vx is pressed on keyboard 2 == Vx (CHIP-8X)
                     }else if(high_h == 0x0e && low == 0xf2){
                     
-                    // exf5 - skip if pressed key on keyboard 2 != Vx (CHIP-8X)
+                    // exf5 - skip if key Vx is not pressed on keyboard 2 == Vx (CHIP-8X)
                     }else if(high_h == 0x0e && low == 0xf5){
 
                     
@@ -621,13 +628,13 @@ namespace chip8{
                 }else if(high_h == 0x0d){
                     draw(f, high_l, low_h, low_l);
 
-                // ex9e - skip if pressed key == Vx
+                // ex9e - skip if key Vx is pressed
                 }else if(high_h == 0x0e && low == 0x9e){
-                    if(hardware::pressed_key == hardware::registers.at(high_l)) hardware::pc += 2;
+                    if(hardware::keyboard_1.at(hardware::registers.at(high_l))) hardware::pc += 2;
 
-                // exa1 - skip if pressed key != Vx
+                // exa1 - skip if key Vx is not pressed
                 }else if(high_h == 0x0e && low == 0xa1){
-                    if(hardware::pressed_key != hardware::registers.at(high_l)) hardware::pc += 2;
+                    if(!hardware::keyboard_1.at(hardware::registers.at(high_l))) hardware::pc += 2;
 
                 // fx07 - Vx = delay timer
                 }else if(high_h == 0x0f && low == 0x07){

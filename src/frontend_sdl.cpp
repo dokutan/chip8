@@ -116,33 +116,63 @@ class frontend_sdl{
             SDL_PauseAudioDevice(sdl_audio_device_id, playing ? 0 : 1);
         }
 
-        bool get_quit_requested(){
+        void poll_event(){
             SDL_PollEvent(&sdl_event);
+        }
+
+        bool get_quit_requested(){
             return sdl_event.type == SDL_QUIT;
         }
 
-        int get_key(){
-            int r = -1;
-            SDL_PumpEvents();
+        template<class chip8> void get_keys(chip8 &c8){
+            
+            if(sdl_event.type == SDL_KEYDOWN || sdl_event.type == SDL_KEYUP){
+                bool pressed = sdl_event.key.state == SDL_PRESSED;
+                int key = -1, kb = 1;
 
-            if(keys[SDL_SCANCODE_0]) r = 0;
-            else if(keys[SDL_SCANCODE_1]) r = 1;
-            else if(keys[SDL_SCANCODE_2]) r = 2;
-            else if(keys[SDL_SCANCODE_3]) r = 3;
-            else if(keys[SDL_SCANCODE_4]) r = 4;
-            else if(keys[SDL_SCANCODE_5]) r = 5;
-            else if(keys[SDL_SCANCODE_6]) r = 6;
-            else if(keys[SDL_SCANCODE_7]) r = 7;
-            else if(keys[SDL_SCANCODE_8]) r = 8;
-            else if(keys[SDL_SCANCODE_9]) r = 9;
-            else if(keys[SDL_SCANCODE_A]) r = 10;
-            else if(keys[SDL_SCANCODE_B]) r = 11;
-            else if(keys[SDL_SCANCODE_C]) r = 12;
-            else if(keys[SDL_SCANCODE_D]) r = 13;
-            else if(keys[SDL_SCANCODE_E]) r = 14;
-            else if(keys[SDL_SCANCODE_F]) r = 15;
+                switch(sdl_event.key.keysym.scancode){
+                    // keyboard 1
+                    case SDL_SCANCODE_0: key = 0; kb = 1; break;
+                    case SDL_SCANCODE_1: key = 1; kb = 1; break;
+                    case SDL_SCANCODE_2: key = 2; kb = 1; break;
+                    case SDL_SCANCODE_3: key = 3; kb = 1; break;
+                    case SDL_SCANCODE_4: key = 4; kb = 1; break;
+                    case SDL_SCANCODE_5: key = 5; kb = 1; break;
+                    case SDL_SCANCODE_6: key = 6; kb = 1; break;
+                    case SDL_SCANCODE_7: key = 7; kb = 1; break;
+                    case SDL_SCANCODE_8: key = 8; kb = 1; break;
+                    case SDL_SCANCODE_9: key = 9; kb = 1; break;
+                    case SDL_SCANCODE_A: key = 10; kb = 1; break;
+                    case SDL_SCANCODE_B: key = 11; kb = 1; break;
+                    case SDL_SCANCODE_C: key = 12; kb = 1; break;
+                    case SDL_SCANCODE_D: key = 13; kb = 1; break;
+                    case SDL_SCANCODE_E: key = 14; kb = 1; break;
+                    case SDL_SCANCODE_F: key = 15; kb = 1; break;
+                    // keyboard 2
+                    /* TODO
+                    case SDL_SCANCODE_0: key = 0; kb = 2; break;
+                    case SDL_SCANCODE_1: key = 1; kb = 2; break;
+                    case SDL_SCANCODE_2: key = 2; kb = 2; break;
+                    case SDL_SCANCODE_3: key = 3; kb = 2; break;
+                    case SDL_SCANCODE_4: key = 4; kb = 2; break;
+                    case SDL_SCANCODE_5: key = 5; kb = 2; break;
+                    case SDL_SCANCODE_6: key = 6; kb = 2; break;
+                    case SDL_SCANCODE_7: key = 7; kb = 2; break;
+                    case SDL_SCANCODE_8: key = 8; kb = 2; break;
+                    case SDL_SCANCODE_9: key = 9; kb = 2; break;
+                    case SDL_SCANCODE_A: key = 10; kb = 2; break;
+                    case SDL_SCANCODE_B: key = 11; kb = 2; break;
+                    case SDL_SCANCODE_C: key = 12; kb = 2; break;
+                    case SDL_SCANCODE_D: key = 13; kb = 2; break;
+                    case SDL_SCANCODE_E: key = 14; kb = 2; break;
+                    case SDL_SCANCODE_F: key = 15; kb = 2; break;
+                    */
+                }
 
-            return r;
+                if(key >= 0){
+                    c8.set_key(kb, key, pressed);
+                }
+            }
         }
         
         [[deprecated]]
