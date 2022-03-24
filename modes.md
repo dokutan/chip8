@@ -143,7 +143,14 @@ fx30 | I = address of large sprite of digit in Vx |
 ## SUPER-CHIP Compatibility (schpc)
 https://chip-8.github.io/extensions/#schip-compatibility-schpc-and-gchip-compatibility-gchpc
 
-- Same as SUPER-CHIP 1.1, but all instructions behave as in CHIP-8
+Same as SUPER-CHIP 1.1, but all instructions behave as in CHIP-8
+
+## SUPER-CHIP with scroll up (schip11scu)
+https://chip-8.github.io/extensions/#super-chip-with-scroll-up
+https://massung.github.io/CHIP-8/
+
+Identical to SUPER-CHIP 1.1 with one added instruction:
+- 00bn: scroll display n pixels up
 
 ## CHIP-8X (chip8x)
 https://chip-8.github.io/extensions/#chip-8x

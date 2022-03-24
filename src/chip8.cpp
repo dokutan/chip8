@@ -76,6 +76,8 @@ int main(int argc, char* argv[]){
             run<chip8::schip10, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "schip11") == 0){
             run<chip8::schip11, frontend_sdl>(argv[2]);
+        }else if(std::strcmp(argv[1], "schip11scu") == 0){
+            run<chip8::schip11scu, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "schpc") == 0){
             run<chip8::schpc, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "chip8x") == 0){
