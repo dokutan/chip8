@@ -154,6 +154,19 @@ This extension adds instructions to control the Color Card, Simple Sound and exp
 - Programs start at 0x0300
 - bnnn is unavailable (replaced with the bxyn instruction)
 
+Added opcodes:
+
+opcode | description | note
+---|---|---
+02a0 | step background color |
+5xy1 | for each nibble in Vx, Vy: Vx = (Vx + Vy) % 8 |
+bxy0 | set foreground color in area given by Vx and Vx+1 to Vy |
+bxyn | set foreground color at Vx,Vx+1 for n rows to Vy |
+exf2 | skip if key Vx is pressed on keyboard 2 == Vx | TODO
+exf5 | skip if key Vx is not pressed on keyboard 2 == Vx | TODO
+fxf8 | output Vx to port (set sound frequency | TODO
+fxfb | wait for input from port and store it in Vx | not implemented
+
 background colors: blue (default), black, green, red
 
 foreground colors:
