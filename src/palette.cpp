@@ -9,7 +9,7 @@ namespace chip8{
         public:
             /// returns the color of the pixel at (x, y)
             template<class hardware> std::array<uint8_t, 3> color(hardware hw, int x, int y){
-                if(hw->screen_content.at(y).at(x)){
+                if(hw->screen_content.at(0).at(y).at(x)){
                     return fg;
                 }
                 return bg;
@@ -35,7 +35,7 @@ namespace chip8{
         public:
             /// returns the color of the pixel at (x, y)
             template<class hardware> std::array<uint8_t, 3> color(hardware hw, int x, int y){
-                if(hw->screen_content.at(y).at(x)){
+                if(hw->screen_content.at(0).at(y).at(x)){
                     switch(hw->screen_fg_color.at(y).at(x)){
                         case 0: return black; break;
                         case 1: return red; break;

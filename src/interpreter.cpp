@@ -311,58 +311,64 @@ namespace chip8{
 
                     // 00cn - scroll display n pixels down (SUPER-CHIP 1.1)
                     if(high == 0x00 && low_h == 0x0c){
-                        for(int y = hardware::screen_content.size() - 1 ; y >= low_l;  y--){
-                            hardware::screen_content.at(y) = hardware::screen_content.at(y - low_l);
-                            
-                            for(int x = 0; x < hardware::screen_content.at(y).size(); x++){
-                                f.draw(x, y, hardware::palette.color(this, x, y));
+                        for(int plane = 0; plane < hardware::screen_planes; plane++){
+                            for(int y = hardware::screen_y - 1 ; y >= low_l;  y--){
+                                hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y - low_l);
+                                
+                                for(int x = 0; x < hardware::screen_x; x++){
+                                    f.draw(x, y, hardware::palette.color(this, x, y));
+                                }
                             }
-                        }
-                        for(int y = 0; y < low_l; y++){
-                            hardware::screen_content.at(y).fill(0x00);
-                            for(int x = 0; x < hardware::screen_content.at(y).size(); x++){
-                                f.draw(x, y, hardware::palette.color(this, x, y));
+                            for(int y = 0; y < low_l; y++){
+                                hardware::screen_content.at(plane).at(y).fill(0x00);
+                                for(int x = 0; x < hardware::screen_x; x++){
+                                    f.draw(x, y, hardware::palette.color(this, x, y));
+                                }
                             }
                         }
                     
                     // 00fb - scroll display 4 pixels right (SUPER-CHIP 1.1)
                     }else if(opcode == 0x00fb){
-                        for(int y = 0; y < hardware::screen_content.size(); y++){
-                            int x = hardware::screen_content.at(y).size() - 5;
-                            while(x >= 0){
-                                hardware::screen_content.at(y).at(x + 4) = hardware::screen_content.at(y).at(x);
-                                f.draw(x + 4, y, hardware::palette.color(this, x + 4, y));
-                                x--;
-                            }
+                        for(int plane = 0; plane < hardware::screen_planes; plane++){
+                            for(int y = 0; y < hardware::screen_y; y++){
+                                int x = hardware::screen_x - 5;
+                                while(x >= 0){
+                                    hardware::screen_content.at(plane).at(y).at(x + 4) = hardware::screen_content.at(plane).at(y).at(x);
+                                    f.draw(x + 4, y, hardware::palette.color(this, x + 4, y));
+                                    x--;
+                                }
 
-                            hardware::screen_content.at(y).at(0) = 0x00;
-                            hardware::screen_content.at(y).at(1) = 0x00;
-                            hardware::screen_content.at(y).at(2) = 0x00;
-                            hardware::screen_content.at(y).at(3) = 0x00;
-                            f.draw(0, y, hardware::palette.color(this, 0, y));
-                            f.draw(1, y, hardware::palette.color(this, 1, y));
-                            f.draw(2, y, hardware::palette.color(this, 2, y));
-                            f.draw(3, y, hardware::palette.color(this, 3, y));
+                                hardware::screen_content.at(plane).at(y).at(0) = 0x00;
+                                hardware::screen_content.at(plane).at(y).at(1) = 0x00;
+                                hardware::screen_content.at(plane).at(y).at(2) = 0x00;
+                                hardware::screen_content.at(plane).at(y).at(3) = 0x00;
+                                f.draw(0, y, hardware::palette.color(this, 0, y));
+                                f.draw(1, y, hardware::palette.color(this, 1, y));
+                                f.draw(2, y, hardware::palette.color(this, 2, y));
+                                f.draw(3, y, hardware::palette.color(this, 3, y));
+                            }
                         }
                     
                     // 00fc - scroll display 4 pixels left (SUPER-CHIP 1.1)
                     }else if(opcode == 0x00fc){
-                        for(int y = 0; y < hardware::screen_content.size(); y++){
-                            int x = 4;
-                            while(x < hardware::screen_content.at(y).size()){
-                                hardware::screen_content.at(y).at(x - 4) = hardware::screen_content.at(y).at(x);
-                                f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
-                                x++;
-                            }
+                        for(int plane = 0; plane < hardware::screen_planes; plane++){
+                            for(int y = 0; y < hardware::screen_y; y++){
+                                int x = 4;
+                                while(x < hardware::screen_x){
+                                    hardware::screen_content.at(plane).at(y).at(x - 4) = hardware::screen_content.at(plane).at(y).at(x);
+                                    f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
+                                    x++;
+                                }
 
-                            hardware::screen_content.at(y).at(x - 4) = 0x00;
-                            hardware::screen_content.at(y).at(x - 3) = 0x00;
-                            hardware::screen_content.at(y).at(x - 2) = 0x00;
-                            hardware::screen_content.at(y).at(x - 1) = 0x00;
-                            f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
-                            f.draw(x - 3, y, hardware::palette.color(this, x - 3, y));
-                            f.draw(x - 2, y, hardware::palette.color(this, x - 2, y));
-                            f.draw(x - 1, y, hardware::palette.color(this, x - 1, y));
+                                hardware::screen_content.at(plane).at(y).at(x - 4) = 0x00;
+                                hardware::screen_content.at(plane).at(y).at(x - 3) = 0x00;
+                                hardware::screen_content.at(plane).at(y).at(x - 2) = 0x00;
+                                hardware::screen_content.at(plane).at(y).at(x - 1) = 0x00;
+                                f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
+                                f.draw(x - 3, y, hardware::palette.color(this, x - 3, y));
+                                f.draw(x - 2, y, hardware::palette.color(this, x - 2, y));
+                                f.draw(x - 1, y, hardware::palette.color(this, x - 1, y));
+                            }
                         }
                     
                     // fx30 - I = address of large sprite of digit in Vx (SUPER-CHIP 1.1)
@@ -391,17 +397,19 @@ namespace chip8{
                 if constexpr(instruction_set::scroll_up_00bn){
                     // 00bn - scroll display n pixels up
                     if(high_h == 0x00 && low_h == 0x0b){
-                        for(int y = 0 ; y < hardware::screen_content.size() - low_l;  y++){
-                            hardware::screen_content.at(y) = hardware::screen_content.at(y + low_l);
-                            
-                            for(int x = 0; x < hardware::screen_content.at(y).size(); x++){
-                                f.draw(x, y, hardware::palette.color(this, x, y));
+                        for(int plane = 0; plane < hardware::screen_planes; plane++){
+                            for(int y = 0 ; y < hardware::screen_y - low_l;  y++){
+                                hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y + low_l);
+                                
+                                for(int x = 0; x < hardware::screen_x; x++){
+                                    f.draw(x, y, hardware::palette.color(this, x, y));
+                                }
                             }
-                        }
-                        for(int y = hardware::screen_content.size() - low_l; y < hardware::screen_content.size(); y++){
-                            hardware::screen_content.at(y).fill(0x00);
-                            for(int x = 0; x < hardware::screen_content.at(y).size(); x++){
-                                f.draw(x, y, hardware::palette.color(this, x, y));
+                            for(int y = hardware::screen_y - low_l; y < hardware::screen_y; y++){
+                                hardware::screen_content.at(plane).at(y).fill(0x00);
+                                for(int x = 0; x < hardware::screen_x; x++){
+                                    f.draw(x, y, hardware::palette.color(this, x, y));
+                                }
                             }
                         }
 
@@ -504,8 +512,10 @@ namespace chip8{
 
                 // 00e0 - clear screen
                 if(opcode == 0x00e0){
-                    for(auto &i : hardware::screen_content){
-                        i.fill(0x00);
+                    for(int i = 0; i < hardware::screen_planes; i++){
+                        for(auto &j : hardware::screen_content.at(i)){
+                            j.fill(0x00);
+                        }
                     }
                     f.clear(hardware::palette.bg_color(this));
                 
@@ -706,16 +716,17 @@ namespace chip8{
             }
     };
 
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 128, 64, false, chip8_palette>> chip10;
-    typedef chip8_interpreter<chip8_instruction_set<true,  false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8e;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false>, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8_fxf2_fx55_fx65;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false>, quirks_chip8_fxf2_bnnn, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8_fxf2_bnnn;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false>, quirks_chip8_fxf2, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip8_fxf2;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false>, quirks_chip48, chip8_hardware<4096, 0x200, 64, 32, false, chip8_palette>> chip48;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false, false, false>, quirks_schip10, chip8_hardware<4096, 0x200, 128, 64, true, chip8_palette>> schip10;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 128, 64, true, chip8_palette>> schip11;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false>, quirks_schpc, chip8_hardware<4096, 0x200, 128, 64, true, chip8_palette>> schpc;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  true , false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 128, 64, true, chip8_palette>> schip11scu;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, true >, quirks_chip8, chip8_hardware<4096, 0x300, 64, 32, false, chip8x_palette>> chip8x;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 1, 128, 64, false, chip8_palette>> chip10;
+    typedef chip8_interpreter<chip8_instruction_set<true,  false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8e;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false>, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8_fxf2_fx55_fx65;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false>, quirks_chip8_fxf2_bnnn, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8_fxf2_bnnn;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false>, quirks_chip8_fxf2, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8_fxf2;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false>, quirks_chip48, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip48;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false, false, false>, quirks_schip10, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip10;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false>, quirks_schpc, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schpc;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  true , false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11scu;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, true >, quirks_chip8, chip8_hardware<4096, 0x300, 1, 64, 32, false, chip8x_palette>> chip8x;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, true >, quirks_chip8, chip8_hardware<65536, 0x200, 2, 128, 64, true, chip8x_palette>> xochip;
 }

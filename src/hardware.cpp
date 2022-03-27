@@ -6,7 +6,7 @@
 #include <ctime>
 
 namespace chip8{
-    template<size_t memory_size, uint16_t program_start, int t_screen_x, int t_screen_y, bool t_allow_high_res, class palette_t> class chip8_hardware {
+    template<size_t memory_size, uint16_t program_start, int t_screen_planes, int t_screen_x, int t_screen_y, bool t_allow_high_res, class palette_t> class chip8_hardware {
 
         friend palette_t;
 
@@ -53,7 +53,7 @@ namespace chip8{
             uint16_t register_I = 0x0000;
 
             // flag registers (used only for e.g. SUPER-CHIP)
-            std::array<uint8_t, 8> flag_registers;
+            std::array<uint8_t, 16> flag_registers;
 
             // RD.0 register
             uint8_t register_rd0;
@@ -67,7 +67,8 @@ namespace chip8{
             // screen content
             static const int screen_x = t_screen_x;
             static const int screen_y = t_screen_y;
-            std::array<std::array<uint8_t, screen_x>, screen_y> screen_content;
+            static const int screen_planes = t_screen_planes;
+            std::array<std::array<std::array<uint8_t, screen_x>, screen_y>, screen_planes> screen_content;
             static const bool allow_high_res = t_allow_high_res;
             bool high_res = false; // high resolution mode for SUPER-CHIP
 
@@ -89,11 +90,11 @@ namespace chip8{
             int waiting_for_key = -1;
 
             uint8_t screen_get(size_t x, size_t y){
-                return screen_content.at(y).at(x);
+                return screen_content.at(0).at(y).at(x);
             }
 
             template<class frontend> void screen_set(size_t x, size_t y, uint8_t value, frontend &f){
-                screen_content.at(y).at(x) = value;
+                screen_content.at(0).at(y).at(x) = value;
 
                 f.draw(x, y, palette.color(this, x, y));
             }
@@ -105,8 +106,10 @@ namespace chip8{
                 flag_registers.fill(0x00);
                 register_rd0 = 0x00;
                 
-                for(auto &i : screen_content){
-                    i.fill(0x00);
+                for(int i = 0; i < screen_content.size(); i++){
+                    for(auto &j : screen_content.at(i)){
+                        j.fill(0x00);
+                    }
                 }
 
                 // font
@@ -167,17 +170,6 @@ namespace chip8{
             }
 
             /* debug functions
-            void print_screen(std::ostream &outstream){
-                std::cout << "\e[H\e[2J";
-
-                for(size_t x = 0; x < screen_content.size(); x++){
-                    for(size_t y = 0; y < screen_content.at(0).size(); y++){
-                        outstream << (screen_content.at(x).at(y) > 0 ? "██" : "  ");
-                    }
-                    outstream << "\n";
-                }
-            }
-
             void print_registers(std::ostream &outstream){
                 outstream << "I=" << std::setw(4) << std::setfill('0') << std::hex << register_I << " ";
                 for(int i = 0; i < 16; i++)
