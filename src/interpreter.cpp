@@ -7,6 +7,8 @@
 namespace chip8{
     template<class instruction_set, class quirks, class hardware> class chip8_interpreter : public hardware, public quirks, public instruction_set{
         protected:
+            bool skip_instruction;
+
             void bcd_of_v(uint8_t x){
                 std::stringstream s_stream;
                 s_stream << std::setw(3) << std::setfill('0') << std::dec << (int)hardware::registers.at(x);
@@ -150,6 +152,7 @@ namespace chip8{
         
         public:
             chip8_interpreter(){
+                skip_instruction = false;
                 quirks::print(std::cout);
             }
 
@@ -193,6 +196,20 @@ namespace chip8{
                     hardware::waiting_for_timer = false;
                 }
 
+                // skip this instruction?
+                if(skip_instruction){
+                    skip_instruction = false;
+
+                    // 32 bit instruction?
+                    if constexpr(instruction_set::xochip){
+                        if(hardware::memory.at(hardware::pc) == 0xf0 && hardware::memory.at(hardware::pc + 1) == 0x00){
+                            hardware::pc += 2;
+                        }
+                    }
+
+                    hardware::pc += 2;
+                }
+
                 // get opcode from memory
                 uint8_t high = hardware::memory.at(hardware::pc), low = hardware::memory.at(hardware::pc + 1);
                 uint8_t high_h = (high >> 4), high_l = high & 0x0f, low_h = low >> 4, low_l = low & 0x0f;
@@ -218,11 +235,11 @@ namespace chip8{
                     
                     // 0188 - skip the next instruction (CHIP-8E)
                     }else if(opcode == 0x0188){
-                        hardware::pc += 2;   
+                        skip_instruction = true;
                     
                     // 5xy1 - skip if Vx > Vy (CHIP-8E)
                     }else if(high_h == 0x05 && low_l == 0x01){
-                        if(hardware::registers.at(high_l) > hardware::registers.at(low_h)) hardware::pc += 2;
+                        if(hardware::registers.at(high_l) > hardware::registers.at(low_h)) skip_instruction = true;
                     
                     // 5xy2 - store Vx to Vy in memory starting at I; I = I + x + 1 (CHIP-8E)
                     }else if(high_h == 0x05 && low_l == 0x02){
@@ -509,11 +526,11 @@ namespace chip8{
 
                     // exf2 - skip if key Vx is pressed on keyboard 2 == Vx (CHIP-8X)
                     }else if(high_h == 0x0e && low == 0xf2){
-                        if(hardware::keyboard_2.at(hardware::registers.at(high_l))) hardware::pc += 2;
+                        if(hardware::keyboard_2.at(hardware::registers.at(high_l))) skip_instruction = true;
                     
                     // exf5 - skip if key Vx is not pressed on keyboard 2 == Vx (CHIP-8X)
                     }else if(high_h == 0x0e && low == 0xf5){
-                        if(!hardware::keyboard_2.at(hardware::registers.at(high_l))) hardware::pc += 2;
+                        if(!hardware::keyboard_2.at(hardware::registers.at(high_l))) skip_instruction = true;
 
                     
                     // fxf8 - output Vx to port (set sound frequency) (CHIP-8X)
@@ -555,15 +572,15 @@ namespace chip8{
                 
                 // 3xnn - skip if Vx == nn
                 }else if(high_h == 0x03){
-                    if(hardware::registers.at(high_l) == low) hardware::pc += 2;
+                    if(hardware::registers.at(high_l) == low) skip_instruction = true;
                 
                 // 4xnn - skip if Vx != nn
                 }else if(high_h == 0x04){
-                    if(hardware::registers.at(high_l) != low) hardware::pc += 2;
+                    if(hardware::registers.at(high_l) != low) skip_instruction = true;
                 
                 // 5xy0 - skip if Vx == Vy
                 }else if(high_h == 0x05 && low_l == 0x00){
-                    if(hardware::registers.at(high_l) == hardware::registers.at(low_h)) hardware::pc += 2;
+                    if(hardware::registers.at(high_l) == hardware::registers.at(low_h)) skip_instruction = true;
                 
                 // 6xnn - Vx = nn
                 }else if(high_h == 0x06){
@@ -632,7 +649,7 @@ namespace chip8{
                 
                 // 9xy0 - skip if Vx != Vy
                 }else if(high_h == 0x09 && low_l == 0x00){
-                    if(hardware::registers.at(high_l) != hardware::registers.at(low_h)) hardware::pc += 2;
+                    if(hardware::registers.at(high_l) != hardware::registers.at(low_h)) skip_instruction = true;
 
                 // annn - I = nnn
                 }else if(high_h == 0x0a){
@@ -658,11 +675,11 @@ namespace chip8{
 
                 // ex9e - skip if key Vx is pressed
                 }else if(high_h == 0x0e && low == 0x9e){
-                    if(hardware::keyboard_1.at(hardware::registers.at(high_l))) hardware::pc += 2;
+                    if(hardware::keyboard_1.at(hardware::registers.at(high_l))) skip_instruction = true;
 
                 // exa1 - skip if key Vx is not pressed
                 }else if(high_h == 0x0e && low == 0xa1){
-                    if(!hardware::keyboard_1.at(hardware::registers.at(high_l))) hardware::pc += 2;
+                    if(!hardware::keyboard_1.at(hardware::registers.at(high_l))) skip_instruction = true;
 
                 // fx07 - Vx = delay timer
                 }else if(high_h == 0x0f && low == 0x07){
@@ -731,17 +748,17 @@ namespace chip8{
             }
     };
 
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 1, 128, 64, false, chip8_palette>> chip10;
-    typedef chip8_interpreter<chip8_instruction_set<true,  false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8e;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false>, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8_fxf2_fx55_fx65;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false>, quirks_chip8_fxf2_bnnn, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8_fxf2_bnnn;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false>, quirks_chip8_fxf2, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8_fxf2;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false>, quirks_chip48, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip48;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false, false, false>, quirks_schip10, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip10;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false>, quirks_schpc, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schpc;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  true , false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11scu;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, true >, quirks_chip8, chip8_hardware<4096, 0x300, 1, 64, 32, false, chip8x_palette>> chip8x;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, true >, quirks_chip8, chip8_hardware<65536, 0x200, 2, 128, 64, true, chip8x_palette>> xochip;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 1, 128, 64, false, chip8_palette>> chip10;
+    typedef chip8_interpreter<chip8_instruction_set<true,  false, false, false, false, false, false>, quirks_chip8, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8e;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false, false>, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8_fxf2_fx55_fx65;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false, false>, quirks_chip8_fxf2_bnnn, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8_fxf2_bnnn;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false, false>, quirks_chip8_fxf2, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip8_fxf2;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false, false>, quirks_chip48, chip8_hardware<4096, 0x200, 1, 64, 32, false, chip8_palette>> chip48;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false, false, false, false>, quirks_schip10, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip10;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false>, quirks_schpc, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schpc;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  true , false, false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11scu;
+    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, true , false>, quirks_chip8, chip8_hardware<4096, 0x300, 1, 64, 32, false, chip8x_palette>> chip8x;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, true >, quirks_chip8, chip8_hardware<65536, 0x200, 2, 128, 64, true, chip8x_palette>> xochip;
 }

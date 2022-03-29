@@ -8,7 +8,8 @@ namespace chip8{
         bool t_super_chip_1_1,
         bool t_scroll_up_00bn,
         bool t_set_rd0_fxf2,
-        bool t_chip8x
+        bool t_chip8x,
+        bool t_xochip
     > class chip8_instruction_set{
         public:
             /// the CHIP-8E extension
@@ -21,7 +22,9 @@ namespace chip8{
             static constexpr bool scroll_up_00bn = t_scroll_up_00bn;
             /// fxf2 instruction: set the RD.0 register to x
             static constexpr bool set_rd0_fxf2 = t_set_rd0_fxf2;
-            /// The CHIP-8X extension
+            /// the CHIP-8X extension
             static constexpr bool chip8x = t_chip8x;
+            /// the XO-CHIP extension
+            static constexpr bool xochip = t_xochip;
     };
 }
