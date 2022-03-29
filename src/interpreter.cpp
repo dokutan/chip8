@@ -17,7 +17,7 @@ namespace chip8{
                 hardware::memory.at(hardware::register_I + 2) = std::stoi(str.substr(2, 1));
             }
 
-            // draw a sprite
+            /// draw a sprite
             template<class frontend> void draw(frontend &f, uint8_t x, uint8_t y, uint8_t n){
                 if(n == 0){
 
@@ -136,6 +136,16 @@ namespace chip8{
                         Y = (Y + 1) % hardware::screen_y;
                     }
                 }
+            }
+
+            /// clear the screen
+            template<class frontend> void clear_screen(frontend &f){
+                for(int i = 0; i < hardware::screen_planes; i++){
+                    for(auto &j : hardware::screen_content.at(i)){
+                        j.fill(0x00);
+                    }
+                }
+                f.clear(hardware::palette.bg_color(this));
             }
         
         public:
@@ -275,10 +285,16 @@ namespace chip8{
                     // 00fe - disable high resolution mode (SUPER-CHIP 1.0)
                     }else if(opcode == 0x00fe){
                         hardware::high_res = false;
+                        if constexpr(quirks::quirk_00fe_00ff_clear_screen){
+                            clear_screen(f);
+                        }
                     
                     // 00ff - enable high resolution mode (SUPER-CHIP 1.0)
                     }else if(opcode == 0x00ff){
                         if(hardware::allow_high_res) hardware::high_res = true;
+                        if constexpr(quirks::quirk_00fe_00ff_clear_screen){
+                            clear_screen(f);
+                        }
 
                     // fx75 - store V0 - Vx in RPL user flags (0 <= x <= 7) (SUPER-CHIP 1.0)
                     }else if(high_h == 0x0f && low == 0x75){
@@ -516,12 +532,7 @@ namespace chip8{
 
                 // 00e0 - clear screen
                 if(opcode == 0x00e0){
-                    for(int i = 0; i < hardware::screen_planes; i++){
-                        for(auto &j : hardware::screen_content.at(i)){
-                            j.fill(0x00);
-                        }
-                    }
-                    f.clear(hardware::palette.bg_color(this));
+                    clear_screen(f);
                 
                 // 00ee - return
                 }else if(opcode == 0x00ee){
