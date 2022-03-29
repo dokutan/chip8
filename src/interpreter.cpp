@@ -760,5 +760,5 @@ namespace chip8{
     typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false>, quirks_schpc, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schpc;
     typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  true , false, false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11scu;
     typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, true , false>, quirks_chip8, chip8_hardware<4096, 0x300, 1, 64, 32, false, chip8x_palette>> chip8x;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, true >, quirks_chip8, chip8_hardware<65536, 0x200, 2, 128, 64, true, chip8x_palette>> xochip;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, true >, quirks_xochip, chip8_hardware<65536, 0x200, 2, 128, 64, true, xochip_palette>> xochip;
 }

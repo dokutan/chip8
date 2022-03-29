@@ -61,4 +61,31 @@ namespace chip8{
                 }
             }
     };
+
+    class xochip_palette{
+        private:
+            std::array<uint8_t, 3> c0 = {{0x00, 0x00, 0x00}}; // plane 1 : 0, plane 0 : 0
+            std::array<uint8_t, 3> c1 = {{0x00, 0xff, 0x00}}; // plane 1 : 0, plane 0 : 1
+            std::array<uint8_t, 3> c2 = {{0xff, 0x00, 0x00}}; // plane 1 : 1, plane 0 : 0
+            std::array<uint8_t, 3> c3 = {{0xff, 0xff, 0x00}}; // plane 1 : 1, plane 0 : 1
+
+        public:
+            /// returns the color of the pixel at (x, y)
+            template<class hardware> std::array<uint8_t, 3> color(hardware hw, int x, int y){
+                if(hw->screen_content.at(0).at(y).at(x) && !hw->screen_content.at(1).at(y).at(x)){
+                    return c1;
+                }else if(!hw->screen_content.at(0).at(y).at(x) && hw->screen_content.at(1).at(y).at(x)){
+                    return c2;
+                }else if(hw->screen_content.at(0).at(y).at(x) && hw->screen_content.at(1).at(y).at(x)){
+                    return c3;
+                }
+
+                return c0;
+            }
+
+            /// returns the background color for the whole screen
+            template<class hardware> std::array<uint8_t, 3> bg_color(hardware hw){
+                return c0;
+            }
+    };
 }
