@@ -70,8 +70,8 @@ opcode | description | note
 0151 | wait until the delay timer reaches 0 | 
 0188 | skip the next instruction | 
 5xy1 | skip if Vx > Vy | 
-5xy2 | store Vx to Vy in memory starting at I; I = I + x + 1 | 
-5xy3 | load Vx to Vy from memory starting at I; I = I + x + 1 | 
+5xy2 | store Vx to Vy in memory starting at I; I = I + (x-y) + 1 |
+5xy3 | load Vx to Vy from memory starting at I; I = I + (x-y) + 1 |
 bbnn | jump to current instruction - nn bytes | 
 bfnn | jump to current instruction + nn bytes | 
 fx03 | send Vx to output port 3 | not implemented

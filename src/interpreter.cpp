@@ -282,22 +282,26 @@ namespace chip8{
 
                     // fx75 - store V0 - Vx in RPL user flags (0 <= x <= 7) (SUPER-CHIP 1.0)
                     }else if(high_h == 0x0f && low == 0x75){
-                        if(high_l < 8){
-                            for(uint8_t i = 0; i <= high_l; i++){
-                                hardware::flag_registers.at(i) = hardware::registers.at(i);
+                        if constexpr(!quirks::quirk_fx75_fx85_allow_all){
+                            if(high_l >= 8){
+                                throw std::runtime_error("invalid usage of opcode fx75");
                             }
-                        }else{
-                            throw std::runtime_error("invalid usage of opcode fx75");
+                        }
+
+                        for(uint8_t i = 0; i <= high_l; i++){
+                            hardware::flag_registers.at(i) = hardware::registers.at(i);
                         }
                     
                     // fx85 - load V0 - Vx from RPL user flags (0 <= x <= 7) (SUPER-CHIP 1.0)
                     }else if(high_h == 0x0f && low == 0x85){
-                        if(high_l < 8){
-                            for(uint8_t i = 0; i <= high_l; i++){
-                                hardware::registers.at(i) = hardware::flag_registers.at(i);
+                        if constexpr(!quirks::quirk_fx75_fx85_allow_all){
+                            if(high_l >= 8){
+                                throw std::runtime_error("invalid usage of opcode fx85");
                             }
-                        }else{
-                            throw std::runtime_error("invalid usage of opcode fx85");
+                        }
+
+                        for(uint8_t i = 0; i <= high_l; i++){
+                            hardware::registers.at(i) = hardware::flag_registers.at(i);
                         }
 
                     }else{
