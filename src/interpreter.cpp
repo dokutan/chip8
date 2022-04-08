@@ -547,6 +547,52 @@ namespace chip8{
                     if(matched_opcode) return return_value;
                 }
 
+                if constexpr(instruction_set::xochip){
+                    matched_opcode = true;
+                    
+                    // 00dn - scroll display n pixels up (XO-CHIP)
+                    if(high == 0x00 && low_h == 0x0d){
+
+                    // 5xy2 - save Vx to Vy (ascending or descending) in memory starting at I (XO-CHIP)
+                    }else if(high_h == 0x05 && low_l == 0x02){
+                        int v_min = high_l <= low_h ? high_l : low_h;
+                        int v_max = high_l <= low_h ? low_h : high_l;
+                        int i = hardware::register_I;
+                        for(uint8_t j = v_min; j <= v_max; j++){
+                            hardware::memory.at(i) = hardware::registers.at(j);
+                            i++;
+                        }
+
+                    // 5xy3 - load Vx to Vy (ascending or descending) from memory starting at I (XO-CHIP)
+                    }else if(high_h == 0x05 && low_l == 0x03){
+                        int v_min = high_l <= low_h ? high_l : low_h;
+                        int v_max = high_l <= low_h ? low_h : high_l;
+                        int i = hardware::register_I;
+                        for(uint8_t j = v_min; j <= v_max; j++){
+                            hardware::registers.at(j) = hardware::memory.at(i);
+                            i++;
+                        }
+
+                    // f000 nnnn - I = nnnn (XO-CHIP)
+                    }else if(opcode == 0xf000){
+                        hardware::pc += 2;
+                        hardware::register_I = (high << 8) | low;
+                    
+                    // fn01 - set active drawing planes to n (XO-CHIP)
+                    }else if(high_h == 0x0f && low == 0x01){
+
+                    // f002 - store 16 bytes starting at I in the audio pattern buffer (XO-CHIP)
+                    }else if(opcode == 0xf002){
+                    
+                    // fx3a - pitch register = Vx (XO-CHIP)
+                    }else if(high_h == 0x0f && low == 0x3a){
+
+                    }else{
+                        matched_opcode = false;
+                    }
+                    if(matched_opcode) return return_value;
+                }
+
                 // 00e0 - clear screen
                 if(opcode == 0x00e0){
                     clear_screen(f);
@@ -704,12 +750,10 @@ namespace chip8{
                 
                 // fx29 - I = address of sprite of hex digit in Vx
                 }else if(high_h == 0x0f && low == 0x29){
-                    if(hardware::registers.at(high_l) < 0x10){
-                        hardware::register_I = hardware::registers.at(high_l) * 5;
-                    }else if(quirks::quirk_fx29_digits_highres && hardware::registers.at(high_l) >= 0x10 && hardware::registers.at(high_l) <= 0x19){
+                    if(quirks::quirk_fx29_digits_highres && hardware::registers.at(high_l) >= 0x10 && hardware::registers.at(high_l) <= 0x19){
                         hardware::register_I = 80 + (hardware::registers.at(high_l) & 0x0f) * 10;
                     }else{
-                        throw std::runtime_error("invalid usage of opcode fx29");
+                        hardware::register_I = (hardware::registers.at(high_l) & 0x0f) * 5;
                     }
                 
                 // fx33 - memory[I, I+1, I+2] = BCD of Vx
