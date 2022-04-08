@@ -72,6 +72,9 @@ namespace chip8{
             static const bool allow_high_res = t_allow_high_res;
             bool high_res = false; // high resolution mode for SUPER-CHIP
 
+            // active screen planes
+            std::array<bool, screen_planes> active_screen_planes;
+
             // foreground and background color for CHIP-8X
             std::array<std::array<uint8_t, screen_x>, screen_y> screen_fg_color;
             uint8_t screen_bg_color;
@@ -127,6 +130,9 @@ namespace chip8{
                     i.fill(0x07);
                 }
                 screen_bg_color = 0x00;
+
+                active_screen_planes.fill(false);
+                active_screen_planes.at(0) = true;
 
                 keyboard_1.fill(false);
                 keyboard_2.fill(false);

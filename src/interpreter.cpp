@@ -149,6 +149,24 @@ namespace chip8{
                 }
                 f.clear(hardware::palette.bg_color(this));
             }
+
+            template<class frontend> void scroll_up(frontend &f, unsigned int n){
+                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                    for(int y = 0 ; y < hardware::screen_y - n;  y++){
+                        hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y + n);
+
+                        for(int x = 0; x < hardware::screen_x; x++){
+                            f.draw(x, y, hardware::palette.color(this, x, y));
+                        }
+                    }
+                    for(int y = hardware::screen_y - n; y < hardware::screen_y; y++){
+                        hardware::screen_content.at(plane).at(y).fill(0x00);
+                        for(int x = 0; x < hardware::screen_x; x++){
+                            f.draw(x, y, hardware::palette.color(this, x, y));
+                        }
+                    }
+                }
+            }
         
         public:
             chip8_interpreter(){
@@ -434,22 +452,7 @@ namespace chip8{
                 if constexpr(instruction_set::scroll_up_00bn){
                     // 00bn - scroll display n pixels up
                     if(high_h == 0x00 && low_h == 0x0b){
-                        for(int plane = 0; plane < hardware::screen_planes; plane++){
-                            for(int y = 0 ; y < hardware::screen_y - low_l;  y++){
-                                hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y + low_l);
-                                
-                                for(int x = 0; x < hardware::screen_x; x++){
-                                    f.draw(x, y, hardware::palette.color(this, x, y));
-                                }
-                            }
-                            for(int y = hardware::screen_y - low_l; y < hardware::screen_y; y++){
-                                hardware::screen_content.at(plane).at(y).fill(0x00);
-                                for(int x = 0; x < hardware::screen_x; x++){
-                                    f.draw(x, y, hardware::palette.color(this, x, y));
-                                }
-                            }
-                        }
-
+                        scroll_up(f, low_l);
                         return return_value;
                     }
                 }
@@ -552,6 +555,7 @@ namespace chip8{
                     
                     // 00dn - scroll display n pixels up (XO-CHIP)
                     if(high == 0x00 && low_h == 0x0d){
+                        scroll_up(f, low_l);
 
                     // 5xy2 - save Vx to Vy (ascending or descending) in memory starting at I (XO-CHIP)
                     }else if(high_h == 0x05 && low_l == 0x02){
@@ -580,6 +584,13 @@ namespace chip8{
                     
                     // fn01 - set active drawing planes to n (XO-CHIP)
                     }else if(high_h == 0x0f && low == 0x01){
+                        switch(high_l){
+                            case 0x00: hardware::active_screen_planes.at(0) = false; hardware::active_screen_planes.at(1) = false; break;
+                            case 0x01: hardware::active_screen_planes.at(0) = true;  hardware::active_screen_planes.at(1) = false; break;
+                            case 0x02: hardware::active_screen_planes.at(0) = false; hardware::active_screen_planes.at(1) = true;  break;
+                            case 0x03: hardware::active_screen_planes.at(0) = true;  hardware::active_screen_planes.at(1) = true;  break;
+                            default: throw std::runtime_error("invalid usage of opcode fn01");
+                        }
 
                     // f002 - store 16 bytes starting at I in the audio pattern buffer (XO-CHIP)
                     }else if(opcode == 0xf002){
