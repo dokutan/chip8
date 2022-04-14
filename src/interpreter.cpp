@@ -19,123 +19,85 @@ namespace chip8{
                 hardware::memory.at(hardware::register_I + 2) = std::stoi(str.substr(2, 1));
             }
 
-            /// draw a sprite
-            template<class frontend> void draw(frontend &f, uint8_t x, uint8_t y, uint8_t n){
-                if(n == 0){
+            /// draw a pixel
+            template<class frontend> void draw_pixel(frontend &f, int plane, int x, int y){
+                hardware::screen_set(plane, x, y, hardware::screen_get(plane, x, y) ^ 0x01, f);
 
-                    if(quirks::quirk_dxy0_16x16_highres && hardware::high_res){ // 16x16 sprite
-                        hardware::registers.at(0xf) = 0x00;
-
-                        for(int i = 0; i < 16; i++){
-                            if(quirks::quirk_dxyn_no_wrapping && hardware::registers.at(y) + i >= hardware::screen_y){
-                                if(quirks::quirk_dxyn_count_collisions_highres) hardware::registers.at(0xf) += (16 - i);
-                                break;
-                            }
-                            int Y = (hardware::registers.at(y) + i) % hardware::screen_y;
-
-                            for(int j = 0; j < 8; j++){
-                                if(quirks::quirk_dxyn_no_wrapping && hardware::registers.at(x) + j >= hardware::screen_x){
-                                    break;
-                                }
-
-                                int X = (hardware::registers.at(x) + j) % hardware::screen_x;
-                                
-                                if((hardware::memory.at(hardware::register_I + (2 * i)) << j) & 0x80){
-                                    hardware::screen_set(X, Y, hardware::screen_get(X, Y) ^ 0x01, f);
-                                    
-                                    if(quirks::quirk_dxyn_count_collisions_highres && !hardware::screen_get(X, Y)){
-                                        hardware::registers.at(0xf)++;
-                                    }else if(quirks::quirk_dxyn_count_collisions_highres && !hardware::screen_get(X, Y)){
-                                        hardware::registers.at(0xf) = 0x01;
-                                    }
-                                }
-                            }
-                            for(int j = 0; j < 8; j++){
-                                if(quirks::quirk_dxyn_no_wrapping && hardware::registers.at(x) + j + 8 >= hardware::screen_x){
-                                    break;
-                                }
-
-                                int X = (hardware::registers.at(x) + j + 8) % hardware::screen_x;
-                                
-                                if((hardware::memory.at(hardware::register_I + (2 * i) + 1) << j) & 0x80){
-                                    hardware::screen_set(X, Y, hardware::screen_get(X, Y) ^ 0x01, f);
-                                    
-                                    if(quirks::quirk_dxyn_count_collisions_highres && !hardware::screen_get(X, Y)){
-                                        hardware::registers.at(0xf)++;
-                                    }else if(quirks::quirk_dxyn_count_collisions_highres && !hardware::screen_get(X, Y)){
-                                        hardware::registers.at(0xf) = 0x01;
-                                    }
-                                }
-                            }
-                        }
-
-                        return;
-
-                    }else if(quirks::quirk_dxy0_8x16_lowres && !hardware::high_res){ // 8x16 sprite
-                        n = 16;
-                    
-                    }else{ // 0 row sprite
-                        return;
+                if(!hardware::screen_get(plane, x, y)){
+                    if(hardware::high_res && quirks::quirk_dxyn_count_collisions_highres){
+                        hardware::registers.at(0xf)++;
+                    }else{
+                        hardware::registers.at(0xf) = 0x01;
                     }
                 }
-                
-                if(hardware::allow_high_res && !hardware::high_res){ // double the coordinates in low resolution mode
-                    if(quirks::quirk_dxyn_no_wrapping && hardware::registers.at(y) >= (hardware::screen_y / 2)) return;
-                    int Y = hardware::registers.at(y) % (hardware::screen_y / 2);
-                    int X;
-                    hardware::registers.at(0xf) = 0x00;
+            }
 
-                    for(uint8_t N = 0; N < n; N++){
-                        for(int i = 0; i < 8; i++){
-                            if(quirks::quirk_dxyn_no_wrapping && (hardware::registers.at(x) + i) >= (hardware::screen_x / 2)) break;
-                            
-                            X = (hardware::registers.at(x) + i) % (hardware::screen_x / 2);
-
-                            if((hardware::memory.at(hardware::register_I + N) << i) & 0x80){
-                                hardware::screen_set(X * 2, Y * 2, hardware::screen_get(X * 2, Y * 2) ^ 0x01, f);
-                                if(!hardware::screen_get(X * 2, Y * 2)) hardware::registers.at(0xf) = 0x01;
-                                hardware::screen_set(X * 2, Y * 2 + 1, hardware::screen_get(X * 2, Y * 2 + 1) ^ 0x01, f);
-                                if(!hardware::screen_get(X * 2, Y * 2 + 1)) hardware::registers.at(0xf) = 0x01;
-                                hardware::screen_set(X * 2 + 1, Y * 2, hardware::screen_get(X * 2 + 1, Y * 2) ^ 0x01, f);
-                                if(!hardware::screen_get(X * 2 + 1, Y * 2)) hardware::registers.at(0xf) = 0x01;
-                                hardware::screen_set(X * 2 + 1, Y * 2 + 1, hardware::screen_get(X * 2 + 1, Y * 2 + 1) ^ 0x01, f);
-                                if(!hardware::screen_get(X * 2 + 1, Y * 2 + 1)) hardware::registers.at(0xf) = 0x01;
-                            }
-                        }
-
-                        if(quirks::quirk_dxyn_no_wrapping && (Y + 1) >= hardware::screen_y) break;
-
-                        Y = (Y + 1) % (hardware::screen_y / 2);
+            /// draw a sprite
+            template<class frontend> void draw(frontend &f, uint8_t opcode_x, uint8_t opcode_y, uint8_t opcode_n){
+                // number of rows in the sprite
+                const int rows = [=]{
+                    if(opcode_n == 0 && quirks::quirk_dxy0_16x16_highres && hardware::high_res){ // 16x16 sprite
+                        return 16;
+                    }else if(opcode_n == 0 && quirks::quirk_dxy0_8x16_lowres && !hardware::high_res){ // 8x16 sprite
+                        return 16;
+                    }else{
+                        return (int)opcode_n;
                     }
-                }else{
-                    int Y = hardware::registers.at(y) % hardware::screen_y;
-                    int X;
-                    hardware::registers.at(0xf) = 0x00;
+                }();
+                
+                // bytes per row
+                const int bytes_per_row = (opcode_n == 0 && quirks::quirk_dxy0_16x16_highres && hardware::high_res) ? 2 : 1;
 
-                    for(uint8_t N = 0; N < n; N++){
-                        for(int i = 0; i < 8; i++){
-                            if(quirks::quirk_dxyn_no_wrapping && (hardware::registers.at(x) + i) >= hardware::screen_x) break;
+                // 4 screen pixels per sprite pixel ?
+                const bool scale_up = (hardware::allow_high_res && !hardware::high_res);
 
-                            X = (hardware::registers.at(x) + i) % hardware::screen_x;
-                            
-                            if((hardware::memory.at(hardware::register_I + N) << i) & 0x80){
-                                hardware::screen_set(X, Y, hardware::screen_get(X, Y) ^ 0x01, f);
+                // distance between sprite pixels
+                const int stride = scale_up ? 2 : 1;
 
-                                if(quirks::quirk_dxyn_count_collisions_highres && !hardware::screen_get(X, Y)){
-                                    hardware::registers.at(0xf)++;
-                                }else if(!hardware::screen_get(X, Y)){
-                                    hardware::registers.at(0xf) = 0x01;
+                // x coordinate of the sprite
+                const int sprite_x = scale_up ? hardware::registers.at(opcode_x) * 2 : hardware::registers.at(opcode_x);
+                
+                // y coordinate of the sprite
+                const int sprite_y = scale_up ? hardware::registers.at(opcode_y) * 2 : hardware::registers.at(opcode_y);
+
+                int sprite_index = hardware::register_I;
+
+                // draw the sprite
+                hardware::registers.at(0xf) = 0x00;
+
+                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                    if(!hardware::active_screen_planes.at(plane)) continue;
+
+                    int y = quirks::quirk_dxyn_no_wrapping ? sprite_y : sprite_y % hardware::screen_y;
+
+                    for(int row = 0; row < rows; row++){
+                        if(y >= hardware::screen_y) break;
+
+                        int x = quirks::quirk_dxyn_no_wrapping ? sprite_x : sprite_x % hardware::screen_x;
+
+                        for(int byte = 0; byte < bytes_per_row; byte++){
+                            for(int column = 0; column < 8; column++){
+                                if(x >= hardware::screen_x) break;
+
+                                if((hardware::memory.at(sprite_index) << column) & 0x80){
+                                    draw_pixel(f, plane, x, y);
+
+                                    if(scale_up){
+                                        draw_pixel(f, plane, x + 1, y);
+                                        draw_pixel(f, plane, x, y + 1);
+                                        draw_pixel(f, plane, x + 1, y + 1);
+                                    }
                                 }
+
+                                x += stride;
+                                x = quirks::quirk_dxyn_no_wrapping ? x : x % hardware::screen_x;
                             }
+
+                            sprite_index++;
                         }
 
-                        if(quirks::quirk_dxyn_no_wrapping && (Y + 1) >= hardware::screen_y){
-                            if(quirks::quirk_dxyn_count_collisions_highres && hardware::high_res)
-                                hardware::registers.at(0xf) += (N - 1 - n);
-                            break;
-                        }
-
-                        Y = (Y + 1) % hardware::screen_y;
+                        y += stride;
+                        y = quirks::quirk_dxyn_no_wrapping ? y : y % hardware::screen_y;
                     }
                 }
             }
