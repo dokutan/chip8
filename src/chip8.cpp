@@ -46,7 +46,7 @@ template<class chip8_class, class frontend_class> void run(char* filename){
         f.refresh();
 
         // wait
-        std::this_thread::sleep_until(clock_start + 1500 * 1us);
+        std::this_thread::sleep_until(clock_start + 100 * 1us);
     }
 }
 

@@ -40,13 +40,23 @@ namespace chip8{
                         return 16;
                     }else if(opcode_n == 0 && quirks::quirk_dxy0_8x16_lowres && !hardware::high_res){ // 8x16 sprite
                         return 16;
+                    }else if(opcode_n == 0 && quirks::quirk_dxy0_16x16_lowres && !hardware::high_res){ // 16x16 sprite
+                        return 16;
                     }else{
                         return (int)opcode_n;
                     }
                 }();
                 
                 // bytes per row
-                const int bytes_per_row = (opcode_n == 0 && quirks::quirk_dxy0_16x16_highres && hardware::high_res) ? 2 : 1;
+                const int bytes_per_row = [=]{
+                    if(opcode_n == 0 && quirks::quirk_dxy0_16x16_highres && hardware::high_res){
+                        return 2;
+                    }else if(opcode_n == 0 && quirks::quirk_dxy0_16x16_lowres && !hardware::high_res){
+                        return 2;
+                    }else{
+                        return 1;
+                    }
+                }();
 
                 // 4 screen pixels per sprite pixel ?
                 const bool scale_up = (hardware::allow_high_res && !hardware::high_res);
@@ -121,7 +131,7 @@ namespace chip8{
             template<class frontend> void scroll_up(frontend &f, unsigned int n){
                 for(int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
-                    
+
                     for(int y = 0 ; y < hardware::screen_y - n;  y++){
                         hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y + n);
 
@@ -555,8 +565,8 @@ namespace chip8{
 
                     // f000 nnnn - I = nnnn (XO-CHIP)
                     }else if(opcode == 0xf000){
+                        hardware::register_I = (hardware::memory.at(hardware::pc) << 8) | hardware::memory.at(hardware::pc + 1);
                         hardware::pc += 2;
-                        hardware::register_I = (high << 8) | low;
                     
                     // fn01 - set active drawing planes to n (XO-CHIP)
                     }else if(high_h == 0x0f && low == 0x01){
