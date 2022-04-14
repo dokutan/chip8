@@ -104,16 +104,24 @@ namespace chip8{
 
             /// clear the screen
             template<class frontend> void clear_screen(frontend &f){
-                for(int i = 0; i < hardware::screen_planes; i++){
-                    for(auto &j : hardware::screen_content.at(i)){
-                        j.fill(0x00);
+                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                    if(!hardware::active_screen_planes.at(plane)) continue;
+                    
+                    for(int x = 0; x < hardware::screen_x; x++){
+                        for(int y = 0; y < hardware::screen_y; y++){
+                            if(hardware::screen_content.at(plane).at(y).at(x)){
+                                hardware::screen_content.at(plane).at(y).at(x) = 0x00;
+                                f.draw(x, y, hardware::palette.color(this, x, y));
+                            }
+                        }
                     }
                 }
-                f.clear(hardware::palette.bg_color(this));
             }
 
             template<class frontend> void scroll_up(frontend &f, unsigned int n){
                 for(int plane = 0; plane < hardware::screen_planes; plane++){
+                    if(!hardware::active_screen_planes.at(plane)) continue;
+                    
                     for(int y = 0 ; y < hardware::screen_y - n;  y++){
                         hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y + n);
 
@@ -329,6 +337,8 @@ namespace chip8{
                     // 00cn - scroll display n pixels down (SUPER-CHIP 1.1)
                     if(high == 0x00 && low_h == 0x0c){
                         for(int plane = 0; plane < hardware::screen_planes; plane++){
+                            if(!hardware::active_screen_planes.at(plane)) continue;
+
                             for(int y = hardware::screen_y - 1 ; y >= low_l;  y--){
                                 hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y - low_l);
                                 
@@ -347,6 +357,8 @@ namespace chip8{
                     // 00fb - scroll display 4 pixels right (SUPER-CHIP 1.1)
                     }else if(opcode == 0x00fb){
                         for(int plane = 0; plane < hardware::screen_planes; plane++){
+                            if(!hardware::active_screen_planes.at(plane)) continue;
+
                             for(int y = 0; y < hardware::screen_y; y++){
                                 int x = hardware::screen_x - 5;
                                 while(x >= 0){
@@ -369,6 +381,8 @@ namespace chip8{
                     // 00fc - scroll display 4 pixels left (SUPER-CHIP 1.1)
                     }else if(opcode == 0x00fc){
                         for(int plane = 0; plane < hardware::screen_planes; plane++){
+                            if(!hardware::active_screen_planes.at(plane)) continue;
+
                             for(int y = 0; y < hardware::screen_y; y++){
                                 int x = 4;
                                 while(x < hardware::screen_x){
@@ -427,7 +441,7 @@ namespace chip8{
                         hardware::screen_bg_color = (hardware::screen_bg_color + 1) % 4;
                         for(int y = 0; y < hardware::screen_y; y++){
                             for(int x = 0; x < hardware::screen_x; x++){
-                                if(!hardware::screen_get(x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
+                                if(!hardware::screen_get(0, x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
                             }
                         }
                     
@@ -463,7 +477,7 @@ namespace chip8{
                                 if(y >= hardware::screen_y) break;
 
                                 hardware::screen_fg_color.at(y).at(x) = color;
-                                if(hardware::screen_get(x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
+                                if(hardware::screen_get(0, x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
                             }
                         }
                         
@@ -485,7 +499,7 @@ namespace chip8{
                                 if(y >= hardware::screen_y) break;
 
                                 hardware::screen_fg_color.at(y).at(x) = color;
-                                if(hardware::screen_get(x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
+                                if(hardware::screen_get(0, x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
                             }
                         }
 

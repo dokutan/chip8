@@ -92,18 +92,6 @@ namespace chip8{
             std::array<bool, 16> keyboard_1, keyboard_2;
             int waiting_for_key = -1;
 
-            
-            [[deprecated]] uint8_t screen_get(size_t x, size_t y){
-                return screen_content.at(0).at(y).at(x);
-            }
-
-            
-            template<class frontend> [[deprecated]] void screen_set(size_t x, size_t y, uint8_t value, frontend &f){
-                screen_content.at(0).at(y).at(x) = value;
-
-                f.draw(x, y, palette.color(this, x, y));
-            }
-
             uint8_t screen_get(size_t plane, size_t x, size_t y){
                 return screen_content.at(plane).at(y).at(x);
             }
