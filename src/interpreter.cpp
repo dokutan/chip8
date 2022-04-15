@@ -414,16 +414,16 @@ namespace chip8{
 
                     // 00cn - scroll display n pixels down (SUPER-CHIP 1.1)
                     if(high == 0x00 && low_h == 0x0c){
-                        scroll_down(f, quirks::quirk_lowres_double_scroll ? low_l * 2 : low_l);
+                        scroll_down(f, quirks::quirk_lowres_double_scroll && hardware::allow_high_res && !hardware::high_res ? low_l * 2 : low_l);
                     
                     // 00fb - scroll display 4 pixels right (SUPER-CHIP 1.1)
                     }else if(opcode == 0x00fb){
-                        if(quirks::quirk_lowres_double_scroll) scroll_right(f);
+                        if(quirks::quirk_lowres_double_scroll && hardware::allow_high_res && !hardware::high_res) scroll_right(f);
                         scroll_right(f);
                     
                     // 00fc - scroll display 4 pixels left (SUPER-CHIP 1.1)
                     }else if(opcode == 0x00fc){
-                        if(quirks::quirk_lowres_double_scroll) scroll_left(f);
+                        if(quirks::quirk_lowres_double_scroll && hardware::allow_high_res && !hardware::high_res) scroll_left(f);
                         scroll_left(f);
                     
                     // fx30 - I = address of large sprite of digit in Vx (SUPER-CHIP 1.1)
@@ -452,7 +452,7 @@ namespace chip8{
                 if constexpr(instruction_set::scroll_up_00bn){
                     // 00bn - scroll display n pixels up
                     if(high_h == 0x00 && low_h == 0x0b){
-                        scroll_up(f, quirks::quirk_lowres_double_scroll ? low_l * 2 : low_l);
+                        scroll_up(f, quirks::quirk_lowres_double_scroll && hardware::allow_high_res && !hardware::high_res ? low_l * 2 : low_l);
                         return return_value;
                     }
                 }
@@ -555,7 +555,7 @@ namespace chip8{
                     
                     // 00dn - scroll display n pixels up (XO-CHIP)
                     if(high == 0x00 && low_h == 0x0d){
-                        scroll_up(f, quirks::quirk_lowres_double_scroll ? low_l * 2 : low_l);
+                        scroll_up(f, quirks::quirk_lowres_double_scroll && hardware::allow_high_res && !hardware::high_res ? low_l * 2 : low_l);
 
                     // 5xy2 - save Vx to Vy (ascending or descending) in memory starting at I (XO-CHIP)
                     }else if(high_h == 0x05 && low_l == 0x02){
