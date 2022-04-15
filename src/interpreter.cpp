@@ -113,9 +113,9 @@ namespace chip8{
             }
 
             /// clear the screen
-            template<class frontend> void clear_screen(frontend &f){
+            template<class frontend> void clear_screen(frontend &f, bool force_all_planes=false){
                 for(int plane = 0; plane < hardware::screen_planes; plane++){
-                    if(!hardware::active_screen_planes.at(plane)) continue;
+                    if(!hardware::active_screen_planes.at(plane) && !force_all_planes) continue;
                     
                     for(int x = 0; x < hardware::screen_x; x++){
                         for(int y = 0; y < hardware::screen_y; y++){
@@ -301,14 +301,14 @@ namespace chip8{
                     }else if(opcode == 0x00fe){
                         hardware::high_res = false;
                         if constexpr(quirks::quirk_00fe_00ff_clear_screen){
-                            clear_screen(f);
+                            clear_screen(f, quirks::quirk_00fe_00ff_clear_all_planes);
                         }
                     
                     // 00ff - enable high resolution mode (SUPER-CHIP 1.0)
                     }else if(opcode == 0x00ff){
                         if(hardware::allow_high_res) hardware::high_res = true;
                         if constexpr(quirks::quirk_00fe_00ff_clear_screen){
-                            clear_screen(f);
+                            clear_screen(f, quirks::quirk_00fe_00ff_clear_all_planes);
                         }
 
                     // fx75 - store V0 - Vx in RPL user flags (0 <= x <= 7) (SUPER-CHIP 1.0)

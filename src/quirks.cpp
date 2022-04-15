@@ -20,7 +20,8 @@ namespace chip8{
         bool t_fx75_fx85_allow_all,
         bool t_00fe_00ff_clear_screen,
         bool t_fx1e_set_vf,
-        bool t_fx1e_overflow_at_memory_size
+        bool t_fx1e_overflow_at_memory_size,
+        bool t_00fe_00ff_clear_all_planes
     > class chip8_quirks{
         public:
             /// bnnn (bxnn): jump to xnn + Vx instead of xnn + V0
@@ -55,6 +56,8 @@ namespace chip8{
             static constexpr bool quirk_fx1e_set_vf = t_fx1e_set_vf;
             /// fx1e sets vF to 1 if I overflows, otherwise to 0
             static constexpr bool quirk_fx1e_overflow_at_memory_size = t_fx1e_overflow_at_memory_size;
+            /// if 00fe and 00ff clear the screen, inactive screen planes are cleared as well
+            static constexpr bool quirk_00fe_00ff_clear_all_planes = t_00fe_00ff_clear_all_planes;
 
             /// Print the quirks to outstream
             void print(std::ostream &outstream){
@@ -74,19 +77,20 @@ namespace chip8{
                 << "fx75_fx85_allow_all             " << (quirk_fx75_fx85_allow_all ? "true\n" : "false\n")
                 << "00fe_00ff_clear_screen          " << (quirk_00fe_00ff_clear_screen ? "true\n" : "false\n")
                 << "fx1e_set_vf                     " << (quirk_fx1e_set_vf ? "true\n" : "false\n")
-                << "fx1e_overflow_at_memory_size    " << (quirk_fx1e_overflow_at_memory_size ? "true\n" : "false\n");
+                << "fx1e_overflow_at_memory_size    " << (quirk_fx1e_overflow_at_memory_size ? "true\n" : "false\n")
+                << "00fe_00ff_clear_all_planes      " << (quirk_00fe_00ff_clear_all_planes ? "true\n" : "false\n");
             }
     };
 
-    typedef chip8_quirks<false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false> quirks_chip8;
-    typedef chip8_quirks<true,  true,  false, true,  false, false, false, false, false, true,  false, false, false, false, false, false> quirks_chip48;
-    typedef chip8_quirks<false, false, false, false, false, false, false, false, false, false, true,  false, false, false, false, false> quirks_chip8_fxf2_fx55_fx65;
-    typedef chip8_quirks<false, false, false, false, false, false, false, false, false, false, false, true,  false, false, false, false> quirks_chip8_fxf2_bnnn;
-    typedef chip8_quirks<false, false, false, false, false, false, false, false, false, false, true,  true,  false, false, false, false> quirks_chip8_fxf2;
-    typedef chip8_quirks<true,  true,  false, true,  true,  false, true,  true,  false, true,  false, false, false, false, false, false> quirks_schip10;
-    typedef chip8_quirks<true,  false, true,  true,  true,  false, true,  false, true,  true,  false, false, false, false, false, false> quirks_schip11;
-    typedef chip8_quirks<false, false, false, false, true,  false, false, false, false, false, false, false, false, false, false, false> quirks_schpc;
-    typedef chip8_quirks<true,  false, true,  true,  true,  false, true,  false, true,  true,  false, false, false, false, true,  true > quirks_schip11_fx1e;
-    typedef chip8_quirks<false, false, false, false, true,  false, false, false, false, false, false, false, false, false, true,  true > quirks_schpc_fx1e;
-    typedef chip8_quirks<false, false, false, false, true,  true,  false, false, false, false, false, false, true,  true,  false, false> quirks_xochip;
+    typedef chip8_quirks<false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false> quirks_chip8;
+    typedef chip8_quirks<true,  true,  false, true,  false, false, false, false, false, true,  false, false, false, false, false, false, false> quirks_chip48;
+    typedef chip8_quirks<false, false, false, false, false, false, false, false, false, false, true,  false, false, false, false, false, false> quirks_chip8_fxf2_fx55_fx65;
+    typedef chip8_quirks<false, false, false, false, false, false, false, false, false, false, false, true,  false, false, false, false, false> quirks_chip8_fxf2_bnnn;
+    typedef chip8_quirks<false, false, false, false, false, false, false, false, false, false, true,  true,  false, false, false, false, false> quirks_chip8_fxf2;
+    typedef chip8_quirks<true,  true,  false, true,  true,  false, true,  true,  false, true,  false, false, false, false, false, false, false> quirks_schip10;
+    typedef chip8_quirks<true,  false, true,  true,  true,  false, true,  false, true,  true,  false, false, false, false, false, false, false> quirks_schip11;
+    typedef chip8_quirks<false, false, false, false, true,  false, false, false, false, false, false, false, false, false, false, false, false> quirks_schpc;
+    typedef chip8_quirks<true,  false, true,  true,  true,  false, true,  false, true,  true,  false, false, false, false, true,  true,  false> quirks_schip11_fx1e;
+    typedef chip8_quirks<false, false, false, false, true,  false, false, false, false, false, false, false, false, false, true,  true,  false> quirks_schpc_fx1e;
+    typedef chip8_quirks<false, false, false, false, true,  true,  false, false, false, false, false, false, true,  true,  false, false, true > quirks_xochip;
 }
