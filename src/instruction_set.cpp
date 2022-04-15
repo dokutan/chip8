@@ -9,7 +9,8 @@ namespace chip8{
         bool t_scroll_up_00bn,
         bool t_set_rd0_fxf2,
         bool t_chip8x,
-        bool t_xochip
+        bool t_xochip,
+        bool t_stop_0000
     > class chip8_instruction_set{
         public:
             /// the CHIP-8E extension
@@ -26,5 +27,7 @@ namespace chip8{
             static constexpr bool chip8x = t_chip8x;
             /// the XO-CHIP extension
             static constexpr bool xochip = t_xochip;
+            /// 0000 stops the interpreter
+            static constexpr bool stop_0000 = t_stop_0000;
     };
 }
