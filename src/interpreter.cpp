@@ -147,6 +147,74 @@ namespace chip8{
                     }
                 }
             }
+
+            template<class frontend> void scroll_down(frontend &f, unsigned int n){
+                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                    if(!hardware::active_screen_planes.at(plane)) continue;
+
+                    for(int y = hardware::screen_y - 1 ; y >= n;  y--){
+                        hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y - n);
+                        
+                        for(int x = 0; x < hardware::screen_x; x++){
+                            f.draw(x, y, hardware::palette.color(this, x, y));
+                        }
+                    }
+                    for(int y = 0; y < n; y++){
+                        hardware::screen_content.at(plane).at(y).fill(0x00);
+                        for(int x = 0; x < hardware::screen_x; x++){
+                            f.draw(x, y, hardware::palette.color(this, x, y));
+                        }
+                    }
+                }
+            }
+
+            template<class frontend> void scroll_right(frontend &f){
+                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                    if(!hardware::active_screen_planes.at(plane)) continue;
+
+                    for(int y = 0; y < hardware::screen_y; y++){
+                        int x = hardware::screen_x - 5;
+                        while(x >= 0){
+                            hardware::screen_content.at(plane).at(y).at(x + 4) = hardware::screen_content.at(plane).at(y).at(x);
+                            f.draw(x + 4, y, hardware::palette.color(this, x + 4, y));
+                            x--;
+                        }
+
+                        hardware::screen_content.at(plane).at(y).at(0) = 0x00;
+                        hardware::screen_content.at(plane).at(y).at(1) = 0x00;
+                        hardware::screen_content.at(plane).at(y).at(2) = 0x00;
+                        hardware::screen_content.at(plane).at(y).at(3) = 0x00;
+                        f.draw(0, y, hardware::palette.color(this, 0, y));
+                        f.draw(1, y, hardware::palette.color(this, 1, y));
+                        f.draw(2, y, hardware::palette.color(this, 2, y));
+                        f.draw(3, y, hardware::palette.color(this, 3, y));
+                    }
+                }
+            }
+
+            template<class frontend> void scroll_left(frontend &f){
+                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                    if(!hardware::active_screen_planes.at(plane)) continue;
+
+                    for(int y = 0; y < hardware::screen_y; y++){
+                        int x = 4;
+                        while(x < hardware::screen_x){
+                            hardware::screen_content.at(plane).at(y).at(x - 4) = hardware::screen_content.at(plane).at(y).at(x);
+                            f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
+                            x++;
+                        }
+
+                        hardware::screen_content.at(plane).at(y).at(x - 4) = 0x00;
+                        hardware::screen_content.at(plane).at(y).at(x - 3) = 0x00;
+                        hardware::screen_content.at(plane).at(y).at(x - 2) = 0x00;
+                        hardware::screen_content.at(plane).at(y).at(x - 1) = 0x00;
+                        f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
+                        f.draw(x - 3, y, hardware::palette.color(this, x - 3, y));
+                        f.draw(x - 2, y, hardware::palette.color(this, x - 2, y));
+                        f.draw(x - 1, y, hardware::palette.color(this, x - 1, y));
+                    }
+                }
+            }
         
         public:
             chip8_interpreter(){
@@ -346,71 +414,17 @@ namespace chip8{
 
                     // 00cn - scroll display n pixels down (SUPER-CHIP 1.1)
                     if(high == 0x00 && low_h == 0x0c){
-                        for(int plane = 0; plane < hardware::screen_planes; plane++){
-                            if(!hardware::active_screen_planes.at(plane)) continue;
-
-                            for(int y = hardware::screen_y - 1 ; y >= low_l;  y--){
-                                hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y - low_l);
-                                
-                                for(int x = 0; x < hardware::screen_x; x++){
-                                    f.draw(x, y, hardware::palette.color(this, x, y));
-                                }
-                            }
-                            for(int y = 0; y < low_l; y++){
-                                hardware::screen_content.at(plane).at(y).fill(0x00);
-                                for(int x = 0; x < hardware::screen_x; x++){
-                                    f.draw(x, y, hardware::palette.color(this, x, y));
-                                }
-                            }
-                        }
+                        scroll_down(f, quirks::quirk_lowres_double_scroll ? low_l * 2 : low_l);
                     
                     // 00fb - scroll display 4 pixels right (SUPER-CHIP 1.1)
                     }else if(opcode == 0x00fb){
-                        for(int plane = 0; plane < hardware::screen_planes; plane++){
-                            if(!hardware::active_screen_planes.at(plane)) continue;
-
-                            for(int y = 0; y < hardware::screen_y; y++){
-                                int x = hardware::screen_x - 5;
-                                while(x >= 0){
-                                    hardware::screen_content.at(plane).at(y).at(x + 4) = hardware::screen_content.at(plane).at(y).at(x);
-                                    f.draw(x + 4, y, hardware::palette.color(this, x + 4, y));
-                                    x--;
-                                }
-
-                                hardware::screen_content.at(plane).at(y).at(0) = 0x00;
-                                hardware::screen_content.at(plane).at(y).at(1) = 0x00;
-                                hardware::screen_content.at(plane).at(y).at(2) = 0x00;
-                                hardware::screen_content.at(plane).at(y).at(3) = 0x00;
-                                f.draw(0, y, hardware::palette.color(this, 0, y));
-                                f.draw(1, y, hardware::palette.color(this, 1, y));
-                                f.draw(2, y, hardware::palette.color(this, 2, y));
-                                f.draw(3, y, hardware::palette.color(this, 3, y));
-                            }
-                        }
+                        if(quirks::quirk_lowres_double_scroll) scroll_right(f);
+                        scroll_right(f);
                     
                     // 00fc - scroll display 4 pixels left (SUPER-CHIP 1.1)
                     }else if(opcode == 0x00fc){
-                        for(int plane = 0; plane < hardware::screen_planes; plane++){
-                            if(!hardware::active_screen_planes.at(plane)) continue;
-
-                            for(int y = 0; y < hardware::screen_y; y++){
-                                int x = 4;
-                                while(x < hardware::screen_x){
-                                    hardware::screen_content.at(plane).at(y).at(x - 4) = hardware::screen_content.at(plane).at(y).at(x);
-                                    f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
-                                    x++;
-                                }
-
-                                hardware::screen_content.at(plane).at(y).at(x - 4) = 0x00;
-                                hardware::screen_content.at(plane).at(y).at(x - 3) = 0x00;
-                                hardware::screen_content.at(plane).at(y).at(x - 2) = 0x00;
-                                hardware::screen_content.at(plane).at(y).at(x - 1) = 0x00;
-                                f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
-                                f.draw(x - 3, y, hardware::palette.color(this, x - 3, y));
-                                f.draw(x - 2, y, hardware::palette.color(this, x - 2, y));
-                                f.draw(x - 1, y, hardware::palette.color(this, x - 1, y));
-                            }
-                        }
+                        if(quirks::quirk_lowres_double_scroll) scroll_left(f);
+                        scroll_left(f);
                     
                     // fx30 - I = address of large sprite of digit in Vx (SUPER-CHIP 1.1)
                     }else if(high_h == 0x0f && low == 0x30){
@@ -438,7 +452,7 @@ namespace chip8{
                 if constexpr(instruction_set::scroll_up_00bn){
                     // 00bn - scroll display n pixels up
                     if(high_h == 0x00 && low_h == 0x0b){
-                        scroll_up(f, low_l);
+                        scroll_up(f, quirks::quirk_lowres_double_scroll ? low_l * 2 : low_l);
                         return return_value;
                     }
                 }
@@ -541,7 +555,7 @@ namespace chip8{
                     
                     // 00dn - scroll display n pixels up (XO-CHIP)
                     if(high == 0x00 && low_h == 0x0d){
-                        scroll_up(f, low_l);
+                        scroll_up(f, quirks::quirk_lowres_double_scroll ? low_l * 2 : low_l);
 
                     // 5xy2 - save Vx to Vy (ascending or descending) in memory starting at I (XO-CHIP)
                     }else if(high_h == 0x05 && low_l == 0x02){
