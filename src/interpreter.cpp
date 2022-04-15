@@ -545,22 +545,32 @@ namespace chip8{
 
                     // 5xy2 - save Vx to Vy (ascending or descending) in memory starting at I (XO-CHIP)
                     }else if(high_h == 0x05 && low_l == 0x02){
-                        int v_min = high_l <= low_h ? high_l : low_h;
-                        int v_max = high_l <= low_h ? low_h : high_l;
                         int i = hardware::register_I;
-                        for(uint8_t j = v_min; j <= v_max; j++){
-                            hardware::memory.at(i) = hardware::registers.at(j);
-                            i++;
+                        if(high_l <= low_h){
+                            for(int j = high_l; j <= low_h; j++){
+                                hardware::memory.at(i) = hardware::registers.at(j);
+                                i++;
+                            }
+                        }else{
+                            for(int j = high_l; j >= low_h; j--){
+                                hardware::memory.at(i) = hardware::registers.at(j);
+                                i++;
+                            }
                         }
 
                     // 5xy3 - load Vx to Vy (ascending or descending) from memory starting at I (XO-CHIP)
                     }else if(high_h == 0x05 && low_l == 0x03){
-                        int v_min = high_l <= low_h ? high_l : low_h;
-                        int v_max = high_l <= low_h ? low_h : high_l;
                         int i = hardware::register_I;
-                        for(uint8_t j = v_min; j <= v_max; j++){
-                            hardware::registers.at(j) = hardware::memory.at(i);
-                            i++;
+                        if(high_l <= low_h){
+                            for(int j = high_l; j <= low_h; j++){
+                                hardware::registers.at(j) = hardware::memory.at(i);
+                                i++;
+                            }
+                        }else{
+                            for(int j = high_l; j >= low_h; j--){
+                                hardware::registers.at(j) = hardware::memory.at(i);
+                                i++;
+                            }
                         }
 
                     // f000 nnnn - I = nnnn (XO-CHIP)
