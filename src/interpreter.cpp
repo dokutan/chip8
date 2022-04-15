@@ -653,42 +653,49 @@ namespace chip8{
                 }else if(high_h == 0x08 && low_l == 0x04){
                     uint8_t result;
                     result = hardware::registers.at(high_l) + hardware::registers.at(low_h);
-                    hardware::registers.at(0xf) = result <= hardware::registers.at(high & 0xf) && hardware::registers.at(low_h) > 0 ? 0x01 : 0x00;
+                    uint8_t F = result <= hardware::registers.at(high & 0xf) && hardware::registers.at(low_h) > 0 ? 0x01 : 0x00;
                     hardware::registers.at(high_l) = result;
+                    hardware::registers.at(0xf) = F;
 
                 // 8xy5 - Vx -= Vy; Vf = borrow ? 0 : 1
                 }else if(high_h == 0x08 && low_l == 0x05){
                     uint8_t result;
                     result = hardware::registers.at(high_l) - hardware::registers.at(low_h);
-                    hardware::registers.at(0xf) = result >= hardware::registers.at(high & 0xf) && hardware::registers.at(low_h) > 0 ? 0x00 : 0x01;
+                    uint8_t F = result >= hardware::registers.at(high & 0xf) && hardware::registers.at(low_h) > 0 ? 0x00 : 0x01;
                     hardware::registers.at(high_l) = result;
+                    hardware::registers.at(0xf) = F;
 
                 // 8xy6 - Vx = Vy >> 1; Vf = Vy & 0x01 
                 }else if(high_h == 0x08 && low_l == 0x06){
+                    uint8_t F;
                     if constexpr(quirks::quirk_8xy6_8xye_shift_vx){
-                        hardware::registers.at(0xf) = hardware::registers.at(high_l) & 0x01;
+                        F = hardware::registers.at(high_l) & 0x01;
                         hardware::registers.at(high_l) = hardware::registers.at(high_l) >> 1;
                     }else{
-                        hardware::registers.at(0xf) = hardware::registers.at(low_h) & 0x01;
+                        F = hardware::registers.at(low_h) & 0x01;
                         hardware::registers.at(high_l) = hardware::registers.at(low_h) >> 1;
                     }
+                    hardware::registers.at(0xf) = F;
 
                 // 8xy7 - Vx = Vy - Vx; Vf = borrow ? 0 : 1
                 }else if(high_h == 0x08 && low_l == 0x07){
                     uint8_t result;
                     result = hardware::registers.at(low_h) - hardware::registers.at(high_l);
-                    hardware::registers.at(0xf) = result >= hardware::registers.at(low_h) && hardware::registers.at(high_l) > 0 ? 0x00 : 0x01;
+                    uint8_t F = result >= hardware::registers.at(low_h) && hardware::registers.at(high_l) > 0 ? 0x00 : 0x01;
                     hardware::registers.at(high_l) = result;
+                    hardware::registers.at(0xf) = F;
 
                 // 8xye - Vx = Vy << 1; Vf = Vy & 0x80
                 }else if(high_h == 0x08 && low_l == 0x0e){
+                    uint8_t F;
                     if constexpr(quirks::quirk_8xy6_8xye_shift_vx){
-                        hardware::registers.at(0xf) = hardware::registers.at(high_l) & 0x80;
+                        F = hardware::registers.at(high_l) & 0x80;
                         hardware::registers.at(high_l) = hardware::registers.at(high_l) << 1;
                     }else{
-                        hardware::registers.at(0xf) = hardware::registers.at(low_h) & 0x80;
+                        F = hardware::registers.at(low_h) & 0x80;
                         hardware::registers.at(high_l) = hardware::registers.at(low_h) << 1;
                     }
+                    hardware::registers.at(0xf) = F;
                 
                 // 9xy0 - skip if Vx != Vy
                 }else if(high_h == 0x09 && low_l == 0x00){
