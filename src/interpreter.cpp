@@ -695,7 +695,7 @@ namespace chip8{
                         F = hardware::registers.at(low_h) & 0x80;
                         hardware::registers.at(high_l) = hardware::registers.at(low_h) << 1;
                     }
-                    hardware::registers.at(0xf) = F;
+                    hardware::registers.at(0xf) = F ? 1 : 0;
                 
                 // 9xy0 - skip if Vx != Vy
                 }else if(high_h == 0x09 && low_l == 0x00){
@@ -750,7 +750,14 @@ namespace chip8{
                 
                 // fx1e - I += Vx
                 }else if(high_h == 0x0f && low == 0x1e){
+                    uint16_t old_I = hardware::register_I;
                     hardware::register_I += hardware::registers.at(high_l);
+                    if(quirks::quirk_fx1e_overflow_at_memory_size){
+                        hardware::register_I %= hardware::memory.size();
+                    }
+                    if(quirks::quirk_fx1e_set_vf){
+                        hardware::registers.at(0xf) = (hardware::register_I < old_I) ? 1 : 0;
+                    }
                 
                 // fx29 - I = address of sprite of hex digit in Vx
                 }else if(high_h == 0x0f && low == 0x29){
@@ -806,6 +813,8 @@ namespace chip8{
     typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false, false, false, false>, quirks_schip10, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip10;
     typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11;
     typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false>, quirks_schpc, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schpc;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false>, quirks_schip11_fx1e, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11_fx1e;
+    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false>, quirks_schpc_fx1e, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schpc_fx1e;
     typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  true , false, false, false>, quirks_schip11, chip8_hardware<4096, 0x200, 1, 128, 64, true, chip8_palette>> schip11scu;
     typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, true , false>, quirks_chip8, chip8_hardware<4096, 0x300, 1, 64, 32, false, chip8x_palette>> chip8x;
     typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, true >, quirks_xochip, chip8_hardware<65536, 0x200, 2, 128, 64, true, xochip_palette>> xochip;

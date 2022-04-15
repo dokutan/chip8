@@ -46,7 +46,7 @@ template<class chip8_class, class frontend_class> void run(char* filename){
         f.refresh();
 
         // wait
-        std::this_thread::sleep_until(clock_start + 100 * 1us);
+        std::this_thread::sleep_until(clock_start + 10 * 1us);
     }
 }
 
@@ -80,6 +80,10 @@ int main(int argc, char* argv[]){
             run<chip8::schip11scu, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "schpc") == 0){
             run<chip8::schpc, frontend_sdl>(argv[2]);
+        }else if(std::strcmp(argv[1], "schip11_fx1e") == 0){
+            run<chip8::schip11_fx1e, frontend_sdl>(argv[2]);
+        }else if(std::strcmp(argv[1], "schpc_fx1e") == 0){
+            run<chip8::schpc_fx1e, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "chip8x") == 0){
             run<chip8::chip8x, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "xochip") == 0){

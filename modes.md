@@ -145,6 +145,16 @@ https://chip-8.github.io/extensions/#schip-compatibility-schpc-and-gchip-compati
 
 Same as SUPER-CHIP 1.1, but all instructions behave as in CHIP-8
 
+## SUPER-CHIP 1.1 with FX1E quirks (schip11_fx1e)
+https://github.com/jameskozlowski/Chip8-C/blob/master/sctest.c8
+
+SUPER-CHIP 1.1 with the following quirks to be compatible with the sctest test program:
+- fx1e sets vF to 1 if I overflows, otherwise to 0
+- fx1e causes I to overflow if it becomes greater than the memory size
+
+## SUPER-CHIP Compatibility with FX1E quirks (schpc_fx1e)
+SUPER-CHIP Compatibility with the same quirks as SUPER-CHIP 1.1 with FX1E quirks.
+
 ## SUPER-CHIP with scroll up (schip11scu)
 https://chip-8.github.io/extensions/#super-chip-with-scroll-up
 https://massung.github.io/CHIP-8/
