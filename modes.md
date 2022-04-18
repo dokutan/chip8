@@ -215,3 +215,10 @@ f000 nnnn | I = nnnn |
 fn01 | set active drawing planes to n | TODO
 f002 | store 16 bytes starting at I in the audio pattern buffer | TODO
 fx3a | pitch register = Vx | TODO
+
+## Octo (octo)
+https://github.com/JohnEarnest/Octo
+https://github.com/JohnEarnest/c-octo
+
+XO-CHIP with different quirks and one added intruction:
+- 0000: stop execution

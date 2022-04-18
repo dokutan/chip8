@@ -29,5 +29,18 @@ namespace chip8{
             static constexpr bool xochip = t_xochip;
             /// 0000 stops the interpreter
             static constexpr bool stop_0000 = t_stop_0000;
+
+            /// Print the instruction set to outstream
+            void print(std::ostream &outstream){
+                outstream
+                << "chip8e                          " << (chip8e ? "true\n" : "false\n")
+                << "super_chip_1_0                  " << (super_chip_1_0 ? "true\n" : "false\n")
+                << "super_chip_1_1                  " << (super_chip_1_1 ? "true\n" : "false\n")
+                << "scroll_up_00bn                  " << (scroll_up_00bn ? "true\n" : "false\n")
+                << "set_rd0_fxf2                    " << (set_rd0_fxf2 ? "true\n" : "false\n")
+                << "chip8x                          " << (chip8x ? "true\n" : "false\n")
+                << "xochip                          " << (xochip ? "true\n" : "false\n")
+                << "stop_0000                       " << (stop_0000 ? "true\n" : "false\n");
+            }
     };
 }

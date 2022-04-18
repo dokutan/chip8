@@ -30,6 +30,7 @@ template<class chip8_class, class frontend_class> void run(char* filename){
 
     frontend_class f(c8.get_screen_x(), c8.get_screen_y(), 10, 60);
     c8.frontend_init(f);
+    c8.print(std::cout);
 
     while(1){
         clock_start = std::chrono::steady_clock::now();
@@ -46,7 +47,7 @@ template<class chip8_class, class frontend_class> void run(char* filename){
         f.refresh();
 
         // wait
-        std::this_thread::sleep_until(clock_start + 10 * 1us);
+        std::this_thread::sleep_until(clock_start + 1000 * 1us);
     }
 }
 

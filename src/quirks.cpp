@@ -64,7 +64,7 @@ namespace chip8{
 
             /// Print the quirks to outstream
             void print(std::ostream &outstream){
-                outstream << "quirks:\n"
+                outstream
                 << "bnnn_bxnn_use_vx                " << (quirk_bnnn_bxnn_use_vx ? "true\n" : "false\n")
                 << "fx55_fx65_increment_less        " << (quirk_fx55_fx65_increment_less ? "true\n" : "false\n")
                 << "fx55_fx65_no_increment          " << (quirk_fx55_fx65_no_increment ? "true\n" : "false\n")

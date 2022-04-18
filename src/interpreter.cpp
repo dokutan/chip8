@@ -219,11 +219,21 @@ namespace chip8{
         public:
             chip8_interpreter(){
                 skip_instruction = false;
-                quirks::print(std::cout);
             }
 
             template<class frontend> void frontend_init(frontend &f){
                 f.clear(hardware::palette.bg_color(this));
+            }
+
+            void print(std::ostream &outstream){
+                outstream << "hardware:\n";
+                hardware::print(outstream);
+
+                outstream << "\ninstruction set:\n";
+                instruction_set::print(outstream);
+
+                outstream << "\nquirks:\n";
+                quirks::print(outstream);
             }
 
             /// execute one instruction at pc and increment pc

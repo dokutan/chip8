@@ -185,5 +185,14 @@ namespace chip8{
                 outstream << "pc=" << std::setw(4) << std::setfill('0') << std::hex << pc << "\n";
             }
             */
+
+            /// Print the hardware configuration to outstream
+            void print(std::ostream &outstream){
+                outstream
+                << "memory                          " << memory_size << " bytes\n"
+                << "program start                   0x" << std::hex << std::setw(4) << std::setfill('0') << program_start << std::dec << std::setw(0) << std::setfill(' ') << "\n"
+                << "screen resolution               " << screen_x << "x" << screen_y << "x" << screen_planes << "\n"
+                << "high/low resolution modes       " << (allow_high_res ? "true\n" : "false\n");
+            }
     };
 }
