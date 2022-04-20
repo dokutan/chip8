@@ -6,7 +6,7 @@
 #include <ctime>
 
 namespace chip8{
-    template<size_t memory_size, uint16_t program_start, int t_screen_planes, int t_screen_x, int t_screen_y, bool t_allow_high_res, class palette_t> class chip8_hardware {
+    template<size_t memory_size, uint16_t program_start, unsigned int t_screen_planes, unsigned int t_screen_x, unsigned int t_screen_y, bool t_allow_high_res, class palette_t> class chip8_hardware {
 
         friend palette_t;
 
@@ -65,9 +65,9 @@ namespace chip8{
             bool waiting_for_timer = false;
             
             // screen content
-            static const int screen_x = t_screen_x;
-            static const int screen_y = t_screen_y;
-            static const int screen_planes = t_screen_planes;
+            static const unsigned int screen_x = t_screen_x;
+            static const unsigned int screen_y = t_screen_y;
+            static const unsigned int screen_planes = t_screen_planes;
             std::array<std::array<std::array<uint8_t, screen_x>, screen_y>, screen_planes> screen_content;
             static const bool allow_high_res = t_allow_high_res;
             bool high_res = false; // high resolution mode for SUPER-CHIP
@@ -109,7 +109,7 @@ namespace chip8{
                 flag_registers.fill(0x00);
                 register_rd0 = 0x00;
                 
-                for(int i = 0; i < screen_content.size(); i++){
+                for(unsigned int i = 0; i < screen_content.size(); i++){
                     for(auto &j : screen_content.at(i)){
                         j.fill(0x00);
                     }

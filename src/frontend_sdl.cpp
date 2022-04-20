@@ -106,6 +106,7 @@ class frontend_sdl{
         }
 
         static void audio_callback(void *userdata, uint8_t *stream, int len){
+            (void)userdata;
             for(int i = 0; i < len; i++){
                 stream[i] = (i % 20 == 0) ? 0xff : 0x00;
             }
@@ -167,6 +168,7 @@ class frontend_sdl{
                     case SDL_SCANCODE_E: key = 14; kb = 2; break;
                     case SDL_SCANCODE_F: key = 15; kb = 2; break;
                     */
+                    default: break;
                 }
 
                 if(key >= 0){

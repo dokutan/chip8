@@ -17,6 +17,7 @@ namespace chip8{
 
             /// returns the background color for the whole screen
             template<class hardware> std::array<uint8_t, 3> bg_color(hardware hw){
+                (void)hw;
                 return bg;
             }
     };
@@ -85,6 +86,7 @@ namespace chip8{
 
             /// returns the background color for the whole screen
             template<class hardware> std::array<uint8_t, 3> bg_color(hardware hw){
+                (void)hw;
                 return c0;
             }
     };

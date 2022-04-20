@@ -40,7 +40,7 @@ namespace chip8{
             /// draw a sprite
             template<class frontend> void draw(frontend &f, uint8_t opcode_x, uint8_t opcode_y, uint8_t opcode_n){
                 // number of rows in the sprite
-                const int rows = [=]{
+                const unsigned int rows = [=,this]{
                     if(opcode_n == 0 && quirks::quirk_dxy0_16x16_highres && hardware::high_res){ // 16x16 sprite
                         return 16;
                     }else if(opcode_n == 0 && quirks::quirk_dxy0_8x16_lowres && !hardware::high_res){ // 8x16 sprite
@@ -53,7 +53,7 @@ namespace chip8{
                 }();
                 
                 // bytes per row
-                const int bytes_per_row = [=]{
+                const unsigned int bytes_per_row = [=,this]{
                     if(opcode_n == 0 && quirks::quirk_dxy0_16x16_highres && hardware::high_res){
                         return 2;
                     }else if(opcode_n == 0 && quirks::quirk_dxy0_16x16_lowres && !hardware::high_res){
@@ -67,31 +67,31 @@ namespace chip8{
                 const bool scale_up = (hardware::allow_high_res && !hardware::high_res);
 
                 // distance between sprite pixels
-                const int stride = scale_up ? 2 : 1;
+                const unsigned int stride = scale_up ? 2 : 1;
 
                 // x coordinate of the sprite
-                const int sprite_x = scale_up ? hardware::registers.at(opcode_x) * 2 : hardware::registers.at(opcode_x);
+                const unsigned int sprite_x = scale_up ? hardware::registers.at(opcode_x) * 2 : hardware::registers.at(opcode_x);
                 
                 // y coordinate of the sprite
-                const int sprite_y = scale_up ? hardware::registers.at(opcode_y) * 2 : hardware::registers.at(opcode_y);
+                const unsigned int sprite_y = scale_up ? hardware::registers.at(opcode_y) * 2 : hardware::registers.at(opcode_y);
 
                 int sprite_index = hardware::register_I;
 
                 // draw the sprite
                 hardware::registers.at(0xf) = 0x00;
 
-                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
 
-                    int y = quirks::quirk_dxyn_no_wrapping ? sprite_y : sprite_y % hardware::screen_y;
+                    unsigned int y = quirks::quirk_dxyn_no_wrapping ? sprite_y : sprite_y % hardware::screen_y;
 
-                    for(int row = 0; row < rows; row++){
+                    for(unsigned int row = 0; row < rows; row++){
                         if(y >= hardware::screen_y) break;
 
-                        int x = quirks::quirk_dxyn_no_wrapping ? sprite_x : sprite_x % hardware::screen_x;
+                        unsigned int x = quirks::quirk_dxyn_no_wrapping ? sprite_x : sprite_x % hardware::screen_x;
 
-                        for(int byte = 0; byte < bytes_per_row; byte++){
-                            for(int column = 0; column < 8; column++){
+                        for(unsigned int byte = 0; byte < bytes_per_row; byte++){
+                            for(unsigned int column = 0; column < 8; column++){
                                 if(x >= hardware::screen_x) break;
 
                                 if((hardware::memory.at(sprite_index) << column) & 0x80){
@@ -119,11 +119,11 @@ namespace chip8{
 
             /// clear the screen
             template<class frontend> void clear_screen(frontend &f, bool force_all_planes=false){
-                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane) && !force_all_planes) continue;
                     
-                    for(int x = 0; x < hardware::screen_x; x++){
-                        for(int y = 0; y < hardware::screen_y; y++){
+                    for(unsigned int x = 0; x < hardware::screen_x; x++){
+                        for(unsigned int y = 0; y < hardware::screen_y; y++){
                             if(hardware::screen_content.at(plane).at(y).at(x)){
                                 hardware::screen_content.at(plane).at(y).at(x) = 0x00;
                                 f.draw(x, y, hardware::palette.color(this, x, y));
@@ -134,19 +134,19 @@ namespace chip8{
             }
 
             template<class frontend> void scroll_up(frontend &f, unsigned int n){
-                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
 
-                    for(int y = 0 ; y < hardware::screen_y - n;  y++){
+                    for(unsigned int y = 0 ; y < hardware::screen_y - n;  y++){
                         hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y + n);
 
-                        for(int x = 0; x < hardware::screen_x; x++){
+                        for(unsigned int x = 0; x < hardware::screen_x; x++){
                             f.draw(x, y, hardware::palette.color(this, x, y));
                         }
                     }
-                    for(int y = hardware::screen_y - n; y < hardware::screen_y; y++){
+                    for(unsigned int y = hardware::screen_y - n; y < hardware::screen_y; y++){
                         hardware::screen_content.at(plane).at(y).fill(0x00);
-                        for(int x = 0; x < hardware::screen_x; x++){
+                        for(unsigned int x = 0; x < hardware::screen_x; x++){
                             f.draw(x, y, hardware::palette.color(this, x, y));
                         }
                     }
@@ -154,19 +154,19 @@ namespace chip8{
             }
 
             template<class frontend> void scroll_down(frontend &f, unsigned int n){
-                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
 
-                    for(int y = hardware::screen_y - 1 ; y >= n;  y--){
+                    for(unsigned int y = hardware::screen_y - 1 ; y >= n;  y--){
                         hardware::screen_content.at(plane).at(y) = hardware::screen_content.at(plane).at(y - n);
                         
-                        for(int x = 0; x < hardware::screen_x; x++){
+                        for(unsigned int x = 0; x < hardware::screen_x; x++){
                             f.draw(x, y, hardware::palette.color(this, x, y));
                         }
                     }
-                    for(int y = 0; y < n; y++){
+                    for(unsigned int y = 0; y < n; y++){
                         hardware::screen_content.at(plane).at(y).fill(0x00);
-                        for(int x = 0; x < hardware::screen_x; x++){
+                        for(unsigned int x = 0; x < hardware::screen_x; x++){
                             f.draw(x, y, hardware::palette.color(this, x, y));
                         }
                     }
@@ -174,10 +174,10 @@ namespace chip8{
             }
 
             template<class frontend> void scroll_right(frontend &f){
-                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
 
-                    for(int y = 0; y < hardware::screen_y; y++){
+                    for(unsigned int y = 0; y < hardware::screen_y; y++){
                         int x = hardware::screen_x - 5;
                         while(x >= 0){
                             hardware::screen_content.at(plane).at(y).at(x + 4) = hardware::screen_content.at(plane).at(y).at(x);
@@ -198,11 +198,11 @@ namespace chip8{
             }
 
             template<class frontend> void scroll_left(frontend &f){
-                for(int plane = 0; plane < hardware::screen_planes; plane++){
+                for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
 
-                    for(int y = 0; y < hardware::screen_y; y++){
-                        int x = 4;
+                    for(unsigned int y = 0; y < hardware::screen_y; y++){
+                        unsigned int x = 4;
                         while(x < hardware::screen_x){
                             hardware::screen_content.at(plane).at(y).at(x - 4) = hardware::screen_content.at(plane).at(y).at(x);
                             f.draw(x - 4, y, hardware::palette.color(this, x - 4, y));
@@ -258,7 +258,7 @@ namespace chip8{
                 // do nothing if we are waiting for a keypress (on keyboard 1)
                 if(hardware::waiting_for_key >= 0){
                     int key = -1;
-                    for(int i = 0; i < hardware::keyboard_1.size(); i++){
+                    for(unsigned int i = 0; i < hardware::keyboard_1.size(); i++){
                         if(hardware::keyboard_1.at(i)) key = i;
                     }
                     
@@ -478,8 +478,8 @@ namespace chip8{
                     // 02a0 - step background color (CHIP-8X)
                     if(opcode == 0x02a0){
                         hardware::screen_bg_color = (hardware::screen_bg_color + 1) % 4;
-                        for(int y = 0; y < hardware::screen_y; y++){
-                            for(int x = 0; x < hardware::screen_x; x++){
+                        for(unsigned int y = 0; y < hardware::screen_y; y++){
+                            for(unsigned int x = 0; x < hardware::screen_x; x++){
                                 if(!hardware::screen_get(0, x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
                             }
                         }
@@ -497,22 +497,22 @@ namespace chip8{
                         constexpr int zone_y = hardware::screen_y / 8;
 
                         // start coordinates
-                        int x0 = (hardware::registers.at(high_l) & 0x0f) * zone_x;
-                        int y0 = (hardware::registers.at((high_l + 1) % hardware::registers.size()) & 0x0f) * zone_y;
+                        unsigned int x0 = (hardware::registers.at(high_l) & 0x0f) * zone_x;
+                        unsigned int y0 = (hardware::registers.at((high_l + 1) % hardware::registers.size()) & 0x0f) * zone_y;
 
                         // end coordinates
-                        int x1 = x0 + zone_x + (hardware::registers.at(high_l) >> 4) * zone_x;
-                        int y1 = y0 + zone_y + (hardware::registers.at((high_l + 1) % hardware::registers.size()) >> 4) * zone_y;
+                        unsigned int x1 = x0 + zone_x + (hardware::registers.at(high_l) >> 4) * zone_x;
+                        unsigned int y1 = y0 + zone_y + (hardware::registers.at((high_l + 1) % hardware::registers.size()) >> 4) * zone_y;
 
                         uint8_t color = hardware::registers.at(low_h);
                         if(color > 8){
                             throw std::runtime_error("invalid usage of opcode bxy0");
                         }
                         
-                        for(int x = x0; x < x1; x++){
+                        for(unsigned int x = x0; x < x1; x++){
                             if(x >= hardware::screen_x) break;
 
-                            for(int y = y0; y < y1; y++){
+                            for(unsigned int y = y0; y < y1; y++){
                                 if(y >= hardware::screen_y) break;
 
                                 hardware::screen_fg_color.at(y).at(x) = color;
@@ -523,18 +523,18 @@ namespace chip8{
                     // bxyn - set foreground color at Vx,Vx+1 for n rows to Vy (CHIP-8X)
                     }else if(high_h == 0x0b){
                         // start coordinates
-                        int x0 = hardware::registers.at(high_l);
-                        int y0 = hardware::registers.at((high_l + 1) % hardware::registers.size());
+                        unsigned int x0 = hardware::registers.at(high_l);
+                        unsigned int y0 = hardware::registers.at((high_l + 1) % hardware::registers.size());
 
                         uint8_t color = hardware::registers.at(low_h);
                         if(color > 8){
                             throw std::runtime_error("invalid usage of opcode bxyn");
                         }
                         
-                        for(int x = x0; x < x0 + 8; x++){
+                        for(unsigned int x = x0; x < x0 + 8; x++){
                             if(x >= hardware::screen_x) break;
 
-                            for(int y = y0; y < y0 + low_l; y++){
+                            for(unsigned int y = y0; y < y0 + low_l; y++){
                                 if(y >= hardware::screen_y) break;
 
                                 hardware::screen_fg_color.at(y).at(x) = color;
