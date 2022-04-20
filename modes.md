@@ -198,7 +198,7 @@ value | color
 6 | aqua
 7 | white (default)
 
-## XO-CHIP
+## XO-CHIP (xochip)
 https://github.com/JohnEarnest/Octo/blob/gh-pages/docs/XO-ChipSpecification.md
 https://chip-8.github.io/extensions/#xo-chip
 
