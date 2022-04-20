@@ -62,6 +62,11 @@ namespace chip8{
             /// scroll the double of the given pixels in low resolution mode
             static constexpr bool quirk_lowres_double_scroll = t_lowres_double_scroll;
 
+            bool override_fx55_fx65_no_increment;
+            chip8_quirks(){
+                override_fx55_fx65_no_increment = false;
+            }
+
             /// Print the quirks to outstream
             void print(std::ostream &outstream){
                 outstream
@@ -98,4 +103,5 @@ namespace chip8{
     typedef chip8_quirks<false, false, false, false, true,  false, false, false, false, false, false, false, false, false, true,  true,  false, false> quirks_schpc_fx1e;
     typedef chip8_quirks<false, false, false, false, true,  true,  false, false, false, false, false, false, true,  true,  false, false, true,  false> quirks_xochip;
     typedef chip8_quirks<false, false, false, false, true,  true,  false, false, false, false, false, false, true,  true,  false, false, true,  true > quirks_octo;
+    typedef chip8_quirks<false, false, false, true,  true,  false, false, false, false, true,  false, false, false, false, false, false, false, false> quirks_chip8run;
 }

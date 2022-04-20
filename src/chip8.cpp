@@ -87,6 +87,8 @@ int main(int argc, char* argv[]){
             run<chip8::xochip, frontend_sdl>(argv[2]);
         }else if(std::strcmp(argv[1], "octo") == 0){
             run<chip8::octo, frontend_sdl>(argv[2]);
+        }else if(std::strcmp(argv[1], "chip8run") == 0){
+            run<chip8::chip8run, frontend_sdl>(argv[2]);
         }else{
             throw std::runtime_error(std::string("unknown mode ") + argv[1]);
         }

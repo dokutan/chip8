@@ -10,7 +10,8 @@ namespace chip8{
         bool t_set_rd0_fxf2,
         bool t_chip8x,
         bool t_xochip,
-        bool t_stop_0000
+        bool t_stop_0000,
+        bool t_chip8run
     > class chip8_instruction_set{
         public:
             /// the CHIP-8E extension
@@ -29,6 +30,8 @@ namespace chip8{
             static constexpr bool xochip = t_xochip;
             /// 0000 stops the interpreter
             static constexpr bool stop_0000 = t_stop_0000;
+            /// the chip8run extension
+            static constexpr bool chip8run = t_chip8run;
 
             /// Print the instruction set to outstream
             void print(std::ostream &outstream){
@@ -40,7 +43,8 @@ namespace chip8{
                 << "set_rd0_fxf2                    " << (set_rd0_fxf2 ? "true\n" : "false\n")
                 << "chip8x                          " << (chip8x ? "true\n" : "false\n")
                 << "xochip                          " << (xochip ? "true\n" : "false\n")
-                << "stop_0000                       " << (stop_0000 ? "true\n" : "false\n");
+                << "stop_0000                       " << (stop_0000 ? "true\n" : "false\n")
+                << "chip8run                        " << (chip8run ? "true\n" : "false\n");
             }
     };
 }

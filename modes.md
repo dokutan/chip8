@@ -162,6 +162,18 @@ https://massung.github.io/CHIP-8/
 Identical to SUPER-CHIP 1.1 with one added instruction:
 - 00bn: scroll display n pixels up
 
+## chip8run (chip8run)
+http://chip8.sourceforge.net/
+http://chip8.sourceforge.net/chip8-1.1.pdf
+https://chip-8.github.io/extensions/#chip8run
+
+Based on SUPER-CHIP 1.1 with different quirks and additional opcodes.
+
+opcode | description | note
+---|---|---
+001n | stop execution with exit status n | n is ignored
+00fa | enable the fx55_fx65_no_increment quirk |
+
 ## CHIP-8X (chip8x)
 https://chip-8.github.io/extensions/#chip-8x
 https://github.com/trapexit/chip-8_documentation/blob/master/Misc/VP580%2C%20VP585%2C%20VP590%2C%20VP595%20Instruction%20Manual%20Including%20CHIP-8X.pdf
