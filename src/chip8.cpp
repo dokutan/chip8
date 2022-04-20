@@ -11,10 +11,6 @@
 #include <thread>
 #include <cstring>
 
-#include "instruction_set.cpp"
-#include "quirks.cpp"
-#include "hardware.cpp"
-#include "palette.cpp"
 #include "interpreter.cpp"
 #include "frontend_sdl.cpp"
 

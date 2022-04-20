@@ -4,6 +4,11 @@
 #include <stdexcept>
 #include <cstdlib>
 
+#include "instruction_set.cpp"
+#include "quirks.cpp"
+#include "hardware.cpp"
+#include "palette.cpp"
+
 namespace chip8{
     template<class instruction_set, class quirks, class hardware> class chip8_interpreter : public hardware, public quirks, public instruction_set{
         protected:
