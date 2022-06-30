@@ -121,8 +121,8 @@ namespace chip8{
                 }
 
                 // big font
-                for(size_t i = 80; i < big_font.size(); i++){
-                    memory.at(i) = big_font.at(i);
+                for(size_t i = 0; i < big_font.size(); i++){
+                    memory.at(80 + i) = big_font.at(i);
                 }
 
                 // screen colors
