@@ -1,10 +1,36 @@
 #include <array>
 
+extern "C"
+{
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+}
+
 namespace chip8{
     class chip8_palette{
         private:
             std::array<uint8_t, 3> fg = {{0xff, 0xff, 0xff}};
             std::array<uint8_t, 3> bg = {{0x00, 0x00, 0x00}};
+
+            /**
+             * @brief load a color from the table at the top of the stack
+             * 
+             * @param L lua state
+             * @param color the target color
+             * @param index index of the color in the table
+             */
+            void load_color(lua_State *L, std::array<uint8_t, 3> &color, int index){
+                lua_geti(L, -1, index);
+                if(lua_istable(L, -1)){
+                    for(int i = 1; i < 4; i++){
+                        lua_geti(L, -1, i);
+                        if(lua_isinteger(L, -1)) color.at(i - 1) = lua_tointeger(L, -1);
+                        lua_pop(L, 1);
+                    }
+                }
+                lua_pop(L, 1);
+            }
 
         public:
             /// returns the color of the pixel at (x, y)
@@ -19,6 +45,15 @@ namespace chip8{
             template<class hardware> std::array<uint8_t, 3> bg_color(hardware hw){
                 (void)hw;
                 return bg;
+            }
+
+            void load_config(lua_State *L){
+                lua_getfield(L, -1, "palette");
+                if(lua_istable(L, -1)){
+                    load_color(L, fg, 1);
+                    load_color(L, bg, 2);
+                }
+                lua_pop(L, 1);
             }
     };
 
@@ -61,6 +96,10 @@ namespace chip8{
                     default: return blue;
                 }
             }
+
+            void load_config(lua_State *L){
+                
+            }
     };
 
     class xochip_palette{
@@ -88,6 +127,10 @@ namespace chip8{
             template<class hardware> std::array<uint8_t, 3> bg_color(hardware hw){
                 (void)hw;
                 return c0;
+            }
+
+            void load_config(lua_State *L){
+                
             }
     };
 }

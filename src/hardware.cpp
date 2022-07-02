@@ -5,6 +5,13 @@
 #include <cstdlib>
 #include <ctime>
 
+extern "C"
+{
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+}
+
 namespace chip8{
     template<size_t memory_size, uint16_t program_start, unsigned int t_screen_planes, unsigned int t_screen_x, unsigned int t_screen_y, bool t_allow_high_res, class palette_t> class chip8_hardware {
 
@@ -103,6 +110,10 @@ namespace chip8{
             }
         
         public:
+            void load_config(lua_State *L){
+                palette.load_config(L);
+            }
+            
             chip8_hardware(){
                 memory.fill(0x00);
                 registers.fill(0x00);
