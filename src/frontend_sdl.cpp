@@ -3,6 +3,11 @@
 #include <stdexcept>
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <cmath>
+
+double audio_offset = 0;
+std::array<uint8_t, 16> audio_pattern;
+double audio_frequency = 4000.0;
 
 class frontend_sdl{
     protected:
@@ -71,10 +76,10 @@ class frontend_sdl{
 
             // open audio device
             SDL_zero(sdl_audio_spec);
-            sdl_audio_spec.freq = 48000;
+            sdl_audio_spec.freq = (4096*8);
             sdl_audio_spec.format = AUDIO_U8;
             sdl_audio_spec.channels = 1;
-            sdl_audio_spec.samples = 32;
+            sdl_audio_spec.samples = 1024;
             sdl_audio_spec.callback = this->audio_callback;
             sdl_audio_device_id = SDL_OpenAudioDevice(nullptr, 0, &sdl_audio_spec, nullptr, 0);
             if(sdl_audio_device_id == 0){
@@ -85,6 +90,7 @@ class frontend_sdl{
                 SDL_Quit();
                 throw std::runtime_error(error);
             }
+            audio_pattern.fill(0x11);
 
             sdl_initialized = true;
 
@@ -108,8 +114,18 @@ class frontend_sdl{
         static void audio_callback(void *userdata, uint8_t *stream, int len){
             (void)userdata;
             for(int i = 0; i < len; i++){
-                stream[i] = (i % 20 == 0) ? 0xff : 0x00;
+                int offset = audio_offset;
+                stream[i] = (audio_pattern.at(offset >> 3) >> ((offset & 7) ^ 7)) & 1 ? 0x50 : 0x00;
+                audio_offset = fmod(audio_offset + (audio_frequency / (4096*8)), 128.0);
             }
+        }
+
+        static void set_audio_pitch(uint8_t p){
+            audio_frequency = 4000.0 * exp2((p - 64) / 48.0);
+        }
+
+        static void set_audio_pattern(size_t i, uint8_t p){
+            audio_pattern.at(i) = p;
         }
 
         /// start or stop the audio

@@ -18,7 +18,7 @@ make
 ```
 
 ## TODO
-- implement advanced sound features (CHIP-8E, XO-CHIP)
+- implement advanced sound features (CHIP-8E)
 - improve XO-CHIP compatibility
 - make speed, keys, palette configurable
 - add more modes

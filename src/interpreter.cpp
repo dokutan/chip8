@@ -619,9 +619,13 @@ namespace chip8{
 
                     // f002 - store 16 bytes starting at I in the audio pattern buffer (XO-CHIP)
                     }else if(opcode == 0xf002){
+                        for(int i = 0; i < 16; i++){
+                            f.set_audio_pattern(i, hardware::memory.at(hardware::register_I + i));
+                        }
                     
                     // fx3a - pitch register = Vx (XO-CHIP)
                     }else if(high_h == 0x0f && low == 0x3a){
+                        f.set_audio_pitch(hardware::registers.at(low_h));
 
                     }else{
                         matched_opcode = false;

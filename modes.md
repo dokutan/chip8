@@ -225,8 +225,8 @@ opcode | description | note
 5xy3 | load Vx to Vy (ascending or descending) from memory starting at I |
 f000 nnnn | I = nnnn |
 fn01 | set active drawing planes to n | TODO
-f002 | store 16 bytes starting at I in the audio pattern buffer | TODO
-fx3a | pitch register = Vx | TODO
+f002 | store 16 bytes starting at I in the audio pattern buffer |
+fx3a | pitch register = Vx |
 
 ## Octo (octo)
 https://github.com/JohnEarnest/Octo
