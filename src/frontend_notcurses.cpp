@@ -62,6 +62,15 @@ class frontend_sdl{
             notcurses_stop(nc);
         }
 
+        void set_audio_frequency(double frequency){
+            (void)frequency;
+        }
+
+        void set_audio_pattern(size_t i, uint8_t p){
+            (void)i;
+            (void)p;
+        }
+
         void set_audio_state(bool playing){
             (void)playing;
         }
