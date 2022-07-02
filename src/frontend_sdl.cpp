@@ -90,7 +90,7 @@ class frontend_sdl{
                 SDL_Quit();
                 throw std::runtime_error(error);
             }
-            audio_pattern.fill(0x11);
+            audio_pattern.fill(0xf);
 
             sdl_initialized = true;
 
@@ -120,8 +120,8 @@ class frontend_sdl{
             }
         }
 
-        static void set_audio_pitch(uint8_t p){
-            audio_frequency = 4000.0 * exp2((p - 64) / 48.0);
+        static void set_audio_frequency(double frequency){
+            audio_frequency = frequency;
         }
 
         static void set_audio_pattern(size_t i, uint8_t p){

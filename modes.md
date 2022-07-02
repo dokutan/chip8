@@ -193,7 +193,7 @@ bxy0 | set foreground color in area given by Vx and Vx+1 to Vy |
 bxyn | set foreground color at Vx,Vx+1 for n rows to Vy |
 exf2 | skip if key Vx is pressed on keyboard 2 == Vx | TODO
 exf5 | skip if key Vx is not pressed on keyboard 2 == Vx | TODO
-fxf8 | output Vx to port (set sound frequency | TODO
+fxf8 | output Vx to port (set sound frequency) |
 fxfb | wait for input from port and store it in Vx | not implemented
 
 background colors: blue (default), black, green, red
@@ -224,7 +224,7 @@ opcode | description | note
 5xy2 | save Vx to Vy (ascending or descending) in memory starting at I |
 5xy3 | load Vx to Vy (ascending or descending) from memory starting at I |
 f000 nnnn | I = nnnn |
-fn01 | set active drawing planes to n | TODO
+fn01 | set active drawing planes to n |
 f002 | store 16 bytes starting at I in the audio pattern buffer |
 fx3a | pitch register = Vx |
 

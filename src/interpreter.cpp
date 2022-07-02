@@ -3,6 +3,7 @@
 #include <exception>
 #include <stdexcept>
 #include <cstdlib>
+#include <cmath>
 
 #include "instruction_set.cpp"
 #include "quirks.cpp"
@@ -553,7 +554,7 @@ namespace chip8{
                     
                     // fxf8 - output Vx to port (set sound frequency) (CHIP-8X)
                     }else if(high_h == 0x0f && low == 0xf8){
-
+                        f.set_audio_frequency((27535 / (hardware::registers.at(high_l) + 1)) * 8);
 
                     // fxfb - wait for input from port and store it in Vx (CHIP-8X)
                     }else if(high_h == 0x0f && low == 0xfb){
@@ -625,7 +626,7 @@ namespace chip8{
                     
                     // fx3a - pitch register = Vx (XO-CHIP)
                     }else if(high_h == 0x0f && low == 0x3a){
-                        f.set_audio_pitch(hardware::registers.at(low_h));
+                        f.set_audio_frequency(4000.0 * exp2((hardware::registers.at(low_h) - 64) / 48.0));
 
                     }else{
                         matched_opcode = false;
