@@ -1,4 +1,5 @@
 #include <array>
+#include <vector>
 #include <chrono>
 #include <fstream>
 #include <stack>
@@ -13,7 +14,7 @@ extern "C"
 }
 
 namespace chip8{
-    template<size_t memory_size, uint16_t program_start, unsigned int t_screen_planes, unsigned int t_screen_x, unsigned int t_screen_y, bool t_allow_high_res, class palette_t> class chip8_hardware {
+    template<class palette_t> class chip8_hardware {
 
         friend palette_t;
 
@@ -51,7 +52,11 @@ namespace chip8{
             }};
             
             // main memory
-            std::array<uint8_t, memory_size> memory;
+            size_t memory_size;
+            std::vector<uint8_t> memory;
+
+            // start of the program
+            uint16_t program_start;
             
             // registers V0-Vf
             std::array<uint8_t, 16> registers;
@@ -72,25 +77,25 @@ namespace chip8{
             bool waiting_for_timer = false;
             
             // screen content
-            static const unsigned int screen_x = t_screen_x;
-            static const unsigned int screen_y = t_screen_y;
-            static const unsigned int screen_planes = t_screen_planes;
-            std::array<std::array<std::array<uint8_t, screen_x>, screen_y>, screen_planes> screen_content;
-            static const bool allow_high_res = t_allow_high_res;
+            unsigned int screen_x;
+            unsigned int screen_y;
+            unsigned int screen_planes;
+            std::vector<std::vector<std::vector<uint8_t>>> screen_content;
+            bool allow_high_res;
             bool high_res = false; // high resolution mode for SUPER-CHIP
 
             // active screen planes
-            std::array<bool, screen_planes> active_screen_planes;
+            std::vector<bool> active_screen_planes;
 
             // foreground and background color for CHIP-8X
-            std::array<std::array<uint8_t, screen_x>, screen_y> screen_fg_color;
+            std::vector<std::vector<uint8_t>> screen_fg_color;
             uint8_t screen_bg_color;
 
             // color palette
             palette_t palette;
             
             // program counter
-            uint16_t pc = program_start;
+            uint16_t pc;
             
             // call stack (for returning from subroutines)
             std::stack< uint16_t > call_stack;
@@ -112,17 +117,56 @@ namespace chip8{
         public:
             void load_config(lua_State *L){
                 palette.load_config(L);
+
+                lua_getfield(L, -1, "x");
+                screen_x = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 64;
+                lua_pop(L, 1);
+
+                lua_getfield(L, -1, "y");
+                screen_y = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 32;
+                lua_pop(L, 1);
+
+                lua_getfield(L, -1, "planes");
+                screen_planes = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 1;
+                lua_pop(L, 1);
+
+                lua_getfield(L, -1, "program_start");
+                program_start = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 0x0200;
+                lua_pop(L, 1);
+
+                lua_getfield(L, -1, "memory_size");
+                memory_size = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 4096;
+                lua_pop(L, 1);
+
+                lua_getfield(L, -1, "allow_high_res");
+                allow_high_res = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
+                lua_pop(L, 1);
             }
             
-            chip8_hardware(){
-                memory.fill(0x00);
+            explicit chip8_hardware(lua_State *L){
+                load_config(L);
+
+                // resize and initialize memory
+                memory.resize(memory_size);
+                for(size_t i = 0; i < memory.size(); i++){
+                    memory.at(i) = 0x00;
+                }
+
+                // initialize registers
                 registers.fill(0x00);
                 flag_registers.fill(0x00);
                 register_rd0 = 0x00;
-                
-                for(unsigned int i = 0; i < screen_content.size(); i++){
-                    for(auto &j : screen_content.at(i)){
-                        j.fill(0x00);
+                pc = program_start;
+
+                // resize and initialze screen content
+                screen_content.resize(screen_planes);
+                for(unsigned int plane = 0; plane < screen_content.size(); plane++){
+                    screen_content.at(plane).resize(screen_y);
+                    for(unsigned int y = 0; y < screen_content.at(plane).size(); y++){
+                        screen_content.at(plane).at(y).resize(screen_x);
+                        for(unsigned int x = 0; x < screen_content.at(plane).at(y).size(); x++){
+                            screen_content.at(plane).at(y).at(x) = 0x00;
+                        }
                     }
                 }
 
@@ -137,12 +181,19 @@ namespace chip8{
                 }
 
                 // screen colors
-                for(auto &i : screen_fg_color){
-                    i.fill(0x07);
+                screen_fg_color.resize(screen_y);
+                for(unsigned int y = 0; y < screen_fg_color.size(); y++){
+                    screen_fg_color.at(y).resize(screen_x);
+                    for(unsigned int x = 0; x < screen_fg_color.at(y).size(); x++){
+                        screen_fg_color.at(y).at(x) = 0x00;
+                    }
                 }
                 screen_bg_color = 0x00;
 
-                active_screen_planes.fill(false);
+                active_screen_planes.resize(screen_planes);
+                for(unsigned int plane = 0; plane < screen_content.size(); plane++){
+                    active_screen_planes.at(plane) = false;
+                }
                 active_screen_planes.at(0) = true;
 
                 keyboard_1.fill(false);

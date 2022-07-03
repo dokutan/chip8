@@ -30,8 +30,7 @@ template<class chip8_class, class frontend_class> void run(char* filename, lua_S
     using namespace std::chrono_literals;
     std::chrono::time_point<std::chrono::steady_clock> clock_start;
 
-    chip8_class c8;
-    c8.load_config(L);
+    chip8_class c8(L);
 
     if(c8.load_binary(filename)){
         throw std::runtime_error(std::string("couldn't open ") + filename);
