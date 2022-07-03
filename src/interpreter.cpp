@@ -234,7 +234,7 @@ namespace chip8{
             }
         
         public:
-            chip8_interpreter(lua_State *L) : hardware(L){
+            explicit chip8_interpreter(lua_State *L) : hardware(L), instruction_set(L){
                 skip_instruction = false;
             }
 
@@ -294,7 +294,7 @@ namespace chip8{
                     skip_instruction = false;
 
                     // 32 bit instruction?
-                    if constexpr(instruction_set::xochip){
+                    if(instruction_set::xochip){
                         if(hardware::memory.at(hardware::pc) == 0xf0 && hardware::memory.at(hardware::pc + 1) == 0x00){
                             hardware::pc += 2;
                         }
@@ -312,7 +312,7 @@ namespace chip8{
                 hardware::pc += 2;
 
                 // decode opcode
-                if constexpr(instruction_set::chip8e){
+                if(instruction_set::chip8e){
                     matched_opcode = true;
 
                     // 00ed - stop execution (CHIP-8E)
@@ -385,7 +385,7 @@ namespace chip8{
                     if(matched_opcode) return return_value;
                 }
 
-                if constexpr(instruction_set::super_chip_1_0){
+                if(instruction_set::super_chip_1_0){
                     matched_opcode = true;
 
                     // 00fd - stop execution (SUPER-CHIP 1.0)
@@ -395,20 +395,20 @@ namespace chip8{
                     // 00fe - disable high resolution mode (SUPER-CHIP 1.0)
                     }else if(opcode == 0x00fe){
                         hardware::high_res = false;
-                        if constexpr(quirks::quirk_00fe_00ff_clear_screen){
+                        if(quirks::quirk_00fe_00ff_clear_screen){
                             clear_screen(f, quirks::quirk_00fe_00ff_clear_all_planes);
                         }
                     
                     // 00ff - enable high resolution mode (SUPER-CHIP 1.0)
                     }else if(opcode == 0x00ff){
                         if(hardware::allow_high_res) hardware::high_res = true;
-                        if constexpr(quirks::quirk_00fe_00ff_clear_screen){
+                        if(quirks::quirk_00fe_00ff_clear_screen){
                             clear_screen(f, quirks::quirk_00fe_00ff_clear_all_planes);
                         }
 
                     // fx75 - store V0 - Vx in RPL user flags (0 <= x <= 7) (SUPER-CHIP 1.0)
                     }else if(high_h == 0x0f && low == 0x75){
-                        if constexpr(!quirks::quirk_fx75_fx85_allow_all){
+                        if(!quirks::quirk_fx75_fx85_allow_all){
                             if(high_l >= 8){
                                 throw std::runtime_error("invalid usage of opcode fx75");
                             }
@@ -420,7 +420,7 @@ namespace chip8{
                     
                     // fx85 - load V0 - Vx from RPL user flags (0 <= x <= 7) (SUPER-CHIP 1.0)
                     }else if(high_h == 0x0f && low == 0x85){
-                        if constexpr(!quirks::quirk_fx75_fx85_allow_all){
+                        if(!quirks::quirk_fx75_fx85_allow_all){
                             if(high_l >= 8){
                                 throw std::runtime_error("invalid usage of opcode fx85");
                             }
@@ -436,7 +436,7 @@ namespace chip8{
                     if(matched_opcode) return return_value;
                 }
 
-                if constexpr(instruction_set::super_chip_1_1){
+                if(instruction_set::super_chip_1_1){
                     matched_opcode = true;
 
                     // 00cn - scroll display n pixels down (SUPER-CHIP 1.1)
@@ -467,7 +467,7 @@ namespace chip8{
                     if(matched_opcode) return return_value;
                 }
 
-                if constexpr(instruction_set::set_rd0_fxf2){
+                if(instruction_set::set_rd0_fxf2){
                     // fxf2 - set the RD.0 register to x
                     if(high_h == 0x0f && low == 0xf2){
                         hardware::register_rd0 = high_l;
@@ -476,7 +476,7 @@ namespace chip8{
                     }
                 }
 
-                if constexpr(instruction_set::scroll_up_00bn){
+                if(instruction_set::scroll_up_00bn){
                     // 00bn - scroll display n pixels up
                     if(high_h == 0x00 && low_h == 0x0b){
                         scroll_up(f, quirks::quirk_lowres_double_scroll && hardware::allow_high_res && !hardware::high_res ? low_l * 2 : low_l);
@@ -484,7 +484,7 @@ namespace chip8{
                     }
                 }
 
-                if constexpr(instruction_set::chip8x){
+                if(instruction_set::chip8x){
                     matched_opcode = true;
                     
                     // 02a0 - step background color (CHIP-8X)
@@ -577,7 +577,7 @@ namespace chip8{
                     if(matched_opcode) return return_value;
                 }
 
-                if constexpr(instruction_set::xochip){
+                if(instruction_set::xochip){
                     matched_opcode = true;
                     
                     // 00dn - scroll display n pixels up (XO-CHIP)
@@ -645,14 +645,14 @@ namespace chip8{
                     if(matched_opcode) return return_value;
                 }
 
-                if constexpr(instruction_set::stop_0000){
+                if(instruction_set::stop_0000){
                     // 0000 - stop execution
                     if(opcode == 0x0000){
                         return 0;
                     }
                 }
 
-                if constexpr(instruction_set::chip8run){
+                if(instruction_set::chip8run){
                     matched_opcode = true;
 
                     // 001n - stop execution with exit status n (chip8run)
@@ -747,7 +747,7 @@ namespace chip8{
                 // 8xy6 - Vx = Vy >> 1; Vf = Vy & 0x01 
                 }else if(high_h == 0x08 && low_l == 0x06){
                     uint8_t F;
-                    if constexpr(quirks::quirk_8xy6_8xye_shift_vx){
+                    if(quirks::quirk_8xy6_8xye_shift_vx){
                         F = hardware::registers.at(high_l) & 0x01;
                         hardware::registers.at(high_l) = hardware::registers.at(high_l) >> 1;
                     }else{
@@ -767,7 +767,7 @@ namespace chip8{
                 // 8xye - Vx = Vy << 1; Vf = Vy & 0x80
                 }else if(high_h == 0x08 && low_l == 0x0e){
                     uint8_t F;
-                    if constexpr(quirks::quirk_8xy6_8xye_shift_vx){
+                    if(quirks::quirk_8xy6_8xye_shift_vx){
                         F = hardware::registers.at(high_l) & 0x80;
                         hardware::registers.at(high_l) = hardware::registers.at(high_l) << 1;
                     }else{
@@ -786,9 +786,9 @@ namespace chip8{
 
                 // bnnn - jump to nnn + V0
                 }else if(high_h == 0x0b){
-                    if constexpr(quirks::quirk_bnnn_bxnn_use_vx){
+                    if(quirks::quirk_bnnn_bxnn_use_vx){
                         hardware::pc = ((high_l << 8) | low) + hardware::registers.at(high_l);
-                    }else if constexpr(quirks::quirk_bnnn_use_rd0){
+                    }else if(quirks::quirk_bnnn_use_rd0){
                         hardware::pc = ((high_l << 8) | low) + hardware::registers.at(hardware::register_rd0);
                     }else{
                         hardware::pc = ((high_l << 8) | low) + hardware::registers.at(0);
@@ -857,7 +857,7 @@ namespace chip8{
                         hardware::register_I++;
                     }
                     
-                    if constexpr(quirks::quirk_fx55_fx65_increment_less)
+                    if(quirks::quirk_fx55_fx65_increment_less)
                         hardware::register_I--;
                     else if(quirks::quirk_fx55_fx65_no_increment || quirks::override_fx55_fx65_no_increment)
                         hardware::register_I -= (high_l + 1);
@@ -869,7 +869,7 @@ namespace chip8{
                         hardware::register_I++;
                     }
 
-                    if constexpr(quirks::quirk_fx55_fx65_increment_less)
+                    if(quirks::quirk_fx55_fx65_increment_less)
                         hardware::register_I--;
                     else if(quirks::quirk_fx55_fx65_no_increment || quirks::override_fx55_fx65_no_increment)
                         hardware::register_I -= (high_l + 1);
@@ -882,21 +882,21 @@ namespace chip8{
             }
     };
 
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false, false, false, false>, quirks_chip8, chip8_hardware<chip8_palette>> chip8;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false, false, false, false>, quirks_chip8, chip8_hardware<chip8_palette>> chip10;
-    typedef chip8_interpreter<chip8_instruction_set<true,  false, false, false, false, false, false, false, false>, quirks_chip8, chip8_hardware<chip8_palette>> chip8e;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false, false, false, false>, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<chip8_palette>> chip8_fxf2_fx55_fx65;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false, false, false, false>, quirks_chip8_fxf2_bnnn, chip8_hardware<chip8_palette>> chip8_fxf2_bnnn;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, true,  false, false, false, false>, quirks_chip8_fxf2, chip8_hardware<chip8_palette>> chip8_fxf2;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, false, false, false, false>, quirks_chip48, chip8_hardware<chip8_palette>> chip48;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  false, false, false, false, false, false, false>, quirks_schip10, chip8_hardware<chip8_palette>> schip10;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false, false, false>, quirks_schip11, chip8_hardware<chip8_palette>> schip11;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false, false, false>, quirks_schpc, chip8_hardware<chip8_palette>> schpc;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false, false, false>, quirks_schip11_fx1e, chip8_hardware<chip8_palette>> schip11_fx1e;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false, false, false>, quirks_schpc_fx1e, chip8_hardware<chip8_palette>> schpc_fx1e;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  true , false, false, false, false, false>, quirks_schip11, chip8_hardware<chip8_palette>> schip11scu;
-    typedef chip8_interpreter<chip8_instruction_set<false, false, false, false, false, true , false, false, false>, quirks_chip8, chip8_hardware<chip8x_palette>> chip8x;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, true,  false, false>, quirks_xochip, chip8_hardware<xochip_palette>> xochip;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, true,  true,  false>, quirks_octo, chip8_hardware<xochip_palette>> octo;
-    typedef chip8_interpreter<chip8_instruction_set<false, true,  true,  false, false, false, false, false, false>, quirks_chip8run, chip8_hardware<chip8_palette>> chip8run;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8, chip8_hardware<chip8_palette>> chip8;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8, chip8_hardware<chip8_palette>> chip10;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8, chip8_hardware<chip8_palette>> chip8e;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<chip8_palette>> chip8_fxf2_fx55_fx65;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8_fxf2_bnnn, chip8_hardware<chip8_palette>> chip8_fxf2_bnnn;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8_fxf2, chip8_hardware<chip8_palette>> chip8_fxf2;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_chip48, chip8_hardware<chip8_palette>> chip48;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_schip10, chip8_hardware<chip8_palette>> schip10;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_schip11, chip8_hardware<chip8_palette>> schip11;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_schpc, chip8_hardware<chip8_palette>> schpc;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_schip11_fx1e, chip8_hardware<chip8_palette>> schip11_fx1e;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_schpc_fx1e, chip8_hardware<chip8_palette>> schpc_fx1e;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_schip11, chip8_hardware<chip8_palette>> schip11scu;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8, chip8_hardware<chip8x_palette>> chip8x;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_xochip, chip8_hardware<xochip_palette>> xochip;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_octo, chip8_hardware<xochip_palette>> octo;
+    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8run, chip8_hardware<chip8_palette>> chip8run;
 }
