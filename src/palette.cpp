@@ -1,4 +1,5 @@
 #include <array>
+#include <string>
 
 extern "C"
 {
@@ -10,8 +11,8 @@ extern "C"
 namespace chip8{
     class chip8_palette{
         private:
-            std::array<uint8_t, 3> fg = {{0xff, 0xff, 0xff}};
-            std::array<uint8_t, 3> bg = {{0x00, 0x00, 0x00}};
+            std::string type = "";
+            std::vector<std::array<uint8_t, 3>> colors;
 
             /**
              * @brief load a color from the table at the top of the stack
@@ -33,104 +34,114 @@ namespace chip8{
             }
 
         public:
-            /// returns the color of the pixel at (x, y)
-            template<class hardware> std::array<uint8_t, 3> color(hardware hw, int x, int y){
-                if(hw->screen_content.at(0).at(y).at(x)){
-                    return fg;
-                }
-                return bg;
-            }
-
-            /// returns the background color for the whole screen
-            template<class hardware> std::array<uint8_t, 3> bg_color(hardware hw){
-                (void)hw;
-                return bg;
-            }
-
             void load_config(lua_State *L){
                 lua_getfield(L, -1, "palette");
+
+                // get palette type
                 if(lua_istable(L, -1)){
-                    load_color(L, fg, 1);
-                    load_color(L, bg, 2);
+                    lua_getfield(L, -1, "type");
+                    type = lua_isstring(L, -1) ? lua_tostring(L, -1) : "";
+                    lua_pop(L, 1);
                 }
-                lua_pop(L, 1);
-            }
-    };
 
-    class chip8x_palette{
-        private:
-            std::array<uint8_t, 3> black = {{0x00, 0x00, 0x00}};
-            std::array<uint8_t, 3> red = {{0xff, 0x00, 0x00}};
-            std::array<uint8_t, 3> blue = {{0x00, 0x00, 0xff}};
-            std::array<uint8_t, 3> violet = {{0xff, 0x00, 0xff}};
-            std::array<uint8_t, 3> green = {{0x00, 0xff, 0x00}};
-            std::array<uint8_t, 3> yellow = {{0xff, 0xff, 0x00}};
-            std::array<uint8_t, 3> aqua = {{0x00, 0xff, 0xff}};
-            std::array<uint8_t, 3> white = {{0xff, 0xff, 0xff}};
+                // set default colors
+                if(type == "chip8x"){
+                    colors = {
+                        {0x00, 0x00, 0x00}, // black
+                        {0xff, 0x00, 0x00}, // red
+                        {0x00, 0x00, 0xff}, // blue
+                        {0xff, 0x00, 0xff}, // violet
+                        {0x00, 0xff, 0x00}, // green
+                        {0xff, 0xff, 0x00}, // yellow
+                        {0x00, 0xff, 0xff}, // aqua
+                        {0xff, 0xff, 0xff}, // white
+                    };
+                }else if(type == "xochip"){
+                    colors = {
+                        {0x00, 0x00, 0x00},
+                        {0x00, 0xff, 0x00},
+                        {0xff, 0x00, 0x00},
+                        {0xff, 0xff, 0x00},
+                    };
+                }else{
+                    colors = {
+                        {0x00, 0x00, 0x00},
+                        {0xff, 0xff, 0xff},
+                    };
+                }
 
-        public:
-            /// returns the color of the pixel at (x, y)
-            template<class hardware> std::array<uint8_t, 3> color(hardware hw, int x, int y){
-                if(hw->screen_content.at(0).at(y).at(x)){
-                    switch(hw->screen_fg_color.at(y).at(x)){
-                        case 0: return black; break;
-                        case 1: return red; break;
-                        case 2: return blue; break;
-                        case 3: return violet; break;
-                        case 4: return green; break;
-                        case 5: return yellow; break;
-                        case 6: return aqua; break;
-                        default: return white;
+                // load colors from config
+                if(lua_istable(L, -1)){
+                    for(size_t i = 0; i < colors.size(); i++){
+                        load_color(L, colors.at(i), i+1);
                     }
                 }
 
-                return bg_color(hw);
+                lua_pop(L, 1);
             }
 
-            /// returns the background color for the whole screen
-            template<class hardware> std::array<uint8_t, 3> bg_color(hardware hw){
+            template<class hardware> std::array<uint8_t, 3> color_chip8(hardware hw, int x, int y){
+                if(hw->screen_content.at(0).at(y).at(x)){
+                    return colors.at(1);
+                }
+                return colors.at(0);
+            }
+
+            template<class hardware> std::array<uint8_t, 3> color_chip8x(hardware hw, int x, int y){
+                if(hw->screen_content.at(0).at(y).at(x)){
+                    return colors.at(hw->screen_fg_color.at(y).at(x));
+                }
+                return bg_color_chip8x(hw);
+            }
+
+            template<class hardware> std::array<uint8_t, 3> color_xochip(hardware hw, int x, int y){
+                if(hw->screen_content.at(0).at(y).at(x) && !hw->screen_content.at(1).at(y).at(x)){
+                    return colors.at(1);
+                }else if(!hw->screen_content.at(0).at(y).at(x) && hw->screen_content.at(1).at(y).at(x)){
+                    return colors.at(2);
+                }else if(hw->screen_content.at(0).at(y).at(x) && hw->screen_content.at(1).at(y).at(x)){
+                    return colors.at(3);
+                }
+                return colors.at(0);
+            }
+
+            template<class hardware> std::array<uint8_t, 3> bg_color_chip8(hardware hw){
+                (void)hw;
+                return colors.at(0);
+            }
+
+            template<class hardware> std::array<uint8_t, 3> bg_color_chip8x(hardware hw){
                 switch(hw->screen_bg_color){
-                    case 1: return black; break;
-                    case 2: return green; break;
-                    case 3: return red; break;
-                    default: return blue;
+                    case 1: return colors.at(0); break;
+                    case 2: return colors.at(4); break;
+                    case 3: return colors.at(1); break;
+                    default: return colors.at(2);
                 }
             }
 
-            void load_config(lua_State *L){
-                
+            template<class hardware> std::array<uint8_t, 3> bg_color_xochip(hardware hw){
+                (void)hw;
+                return colors.at(0);
             }
-    };
 
-    class xochip_palette{
-        private:
-            std::array<uint8_t, 3> c0 = {{0x00, 0x00, 0x00}}; // plane 1 : 0, plane 0 : 0
-            std::array<uint8_t, 3> c1 = {{0x00, 0xff, 0x00}}; // plane 1 : 0, plane 0 : 1
-            std::array<uint8_t, 3> c2 = {{0xff, 0x00, 0x00}}; // plane 1 : 1, plane 0 : 0
-            std::array<uint8_t, 3> c3 = {{0xff, 0xff, 0x00}}; // plane 1 : 1, plane 0 : 1
-
-        public:
             /// returns the color of the pixel at (x, y)
             template<class hardware> std::array<uint8_t, 3> color(hardware hw, int x, int y){
-                if(hw->screen_content.at(0).at(y).at(x) && !hw->screen_content.at(1).at(y).at(x)){
-                    return c1;
-                }else if(!hw->screen_content.at(0).at(y).at(x) && hw->screen_content.at(1).at(y).at(x)){
-                    return c2;
-                }else if(hw->screen_content.at(0).at(y).at(x) && hw->screen_content.at(1).at(y).at(x)){
-                    return c3;
+                if(type == "chip8x"){
+                    return color_chip8x(hw, x, y);
+                }else if(type == "xochip"){
+                    return color_xochip(hw, x, y);
                 }
-
-                return c0;
+                return color_chip8(hw, x, y);
             }
 
             /// returns the background color for the whole screen
             template<class hardware> std::array<uint8_t, 3> bg_color(hardware hw){
-                (void)hw;
-                return c0;
-            }
-
-            void load_config(lua_State *L){
-                
+                if(type == "chip8x"){
+                    return bg_color_chip8x(hw);
+                }else if(type == "xochip"){
+                    return bg_color_xochip(hw);
+                }
+                return bg_color_chip8(hw);
             }
     };
 }

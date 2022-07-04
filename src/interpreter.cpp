@@ -895,8 +895,8 @@ namespace chip8{
     typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip11_fx1e;
     typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schpc_fx1e;
     typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip11scu;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8x_palette>> chip8x;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<xochip_palette>> xochip;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<xochip_palette>> octo;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8x;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> xochip;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> octo;
     typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8run;
 }

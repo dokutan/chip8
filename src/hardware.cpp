@@ -185,7 +185,7 @@ namespace chip8{
                 for(unsigned int y = 0; y < screen_fg_color.size(); y++){
                     screen_fg_color.at(y).resize(screen_x);
                     for(unsigned int x = 0; x < screen_fg_color.at(y).size(); x++){
-                        screen_fg_color.at(y).at(x) = 0x00;
+                        screen_fg_color.at(y).at(x) = 0x07;
                     }
                 }
                 screen_bg_color = 0x00;
