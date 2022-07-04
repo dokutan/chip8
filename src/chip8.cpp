@@ -67,6 +67,8 @@ int main(int argc, char* argv[]){
 
     try{
         lua_State *L = luaL_newstate();
+        luaL_openlibs(L);
+
         if(!luaL_dofile(L, argv[1]) == LUA_OK){
             throw std::runtime_error(lua_tostring(L, -1));
         }
