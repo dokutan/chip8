@@ -14,9 +14,9 @@ make
 ## Running
 ```
 ./chip8 <mode> program.c8
-./chip8 schip11 program.c8 # This runs program.c8 in the SUPER-CHIP 1.1 mode
+./chip8 modes/schip11.lua program.c8 # This runs program.c8 in the SUPER-CHIP 1.1 mode
 ```
 
 ## TODO
-- make speed, keys, palette configurable
+- make keys configurable
 - add more modes
