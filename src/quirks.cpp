@@ -82,7 +82,7 @@ namespace chip8{
                     quirk_fx29_digits_highres = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
                     lua_pop(L, 1);
 
-                    lua_getfield(L, -1, "dxyn_count_collisions_hi");
+                    lua_getfield(L, -1, "dxyn_count_collisions_highres");
                     quirk_dxyn_count_collisions_highres = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
                     lua_pop(L, 1);
 
