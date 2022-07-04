@@ -234,7 +234,7 @@ namespace chip8{
             }
         
         public:
-            explicit chip8_interpreter(lua_State *L) : hardware(L), instruction_set(L){
+            explicit chip8_interpreter(lua_State *L) : hardware(L), quirks(L), instruction_set(L){
                 skip_instruction = false;
             }
 
@@ -882,21 +882,21 @@ namespace chip8{
             }
     };
 
-    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8, chip8_hardware<chip8_palette>> chip8;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8, chip8_hardware<chip8_palette>> chip10;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8, chip8_hardware<chip8_palette>> chip8e;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8_fxf2_fx55_fx65, chip8_hardware<chip8_palette>> chip8_fxf2_fx55_fx65;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8_fxf2_bnnn, chip8_hardware<chip8_palette>> chip8_fxf2_bnnn;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8_fxf2, chip8_hardware<chip8_palette>> chip8_fxf2;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_chip48, chip8_hardware<chip8_palette>> chip48;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_schip10, chip8_hardware<chip8_palette>> schip10;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_schip11, chip8_hardware<chip8_palette>> schip11;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_schpc, chip8_hardware<chip8_palette>> schpc;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_schip11_fx1e, chip8_hardware<chip8_palette>> schip11_fx1e;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_schpc_fx1e, chip8_hardware<chip8_palette>> schpc_fx1e;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_schip11, chip8_hardware<chip8_palette>> schip11scu;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8, chip8_hardware<chip8x_palette>> chip8x;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_xochip, chip8_hardware<xochip_palette>> xochip;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_octo, chip8_hardware<xochip_palette>> octo;
-    typedef chip8_interpreter<chip8_instruction_set, quirks_chip8run, chip8_hardware<chip8_palette>> chip8run;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip10;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8e;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8_fxf2_fx55_fx65;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8_fxf2_bnnn;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8_fxf2;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip48;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip10;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip11;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schpc;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip11_fx1e;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schpc_fx1e;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip11scu;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8x_palette>> chip8x;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<xochip_palette>> xochip;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<xochip_palette>> octo;
+    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8run;
 }
