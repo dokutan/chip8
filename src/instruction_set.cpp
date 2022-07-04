@@ -5,23 +5,23 @@ namespace chip8{
     class chip8_instruction_set{
         protected:
             /// the CHIP-8E extension
-            bool chip8e;
+            bool chip8e = false;
             /// the SUPER-CHIP 1.0 extension
-            bool super_chip_1_0;
+            bool super_chip_1_0 = false;
             /// the SUPER-CHIP 1.1 extension (without SUPER-CHIP 1.0 opcodes)
-            bool super_chip_1_1;
+            bool super_chip_1_1 = false;
             //// 00bn instruction: scroll up n pixels
-            bool scroll_up_00bn;
+            bool scroll_up_00bn = false;
             /// fxf2 instruction: set the RD.0 register to x
-            bool set_rd0_fxf2;
+            bool set_rd0_fxf2 = false;
             /// the CHIP-8X extension
-            bool chip8x;
+            bool chip8x = false;
             /// the XO-CHIP extension
-            bool xochip;
+            bool xochip = false;
             /// 0000 stops the interpreter
-            bool stop_0000;
+            bool stop_0000 = false;
             /// the chip8run extension
-            bool chip8run;
+            bool chip8run = false;
 
         public:
             explicit chip8_instruction_set(lua_State *L){
