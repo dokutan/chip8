@@ -881,22 +881,4 @@ namespace chip8{
                 return return_value;
             }
     };
-
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip10;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8e;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8_fxf2_fx55_fx65;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8_fxf2_bnnn;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8_fxf2;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip48;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip10;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip11;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schpc;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip11_fx1e;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schpc_fx1e;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> schip11scu;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8x;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> xochip;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> octo;
-    typedef chip8_interpreter<chip8_instruction_set, chip8_quirks, chip8_hardware<chip8_palette>> chip8run;
 }

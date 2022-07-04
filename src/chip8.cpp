@@ -67,50 +67,14 @@ int main(int argc, char* argv[]){
 
     try{
         lua_State *L = luaL_newstate();
-        if(!luaL_dofile(L, "config.lua") == LUA_OK){
+        if(!luaL_dofile(L, argv[1]) == LUA_OK){
             throw std::runtime_error(lua_tostring(L, -1));
         }
         if(!lua_istable(L, -1)){
             throw std::runtime_error(argv[1] + std::string(" did not return a table"));
         }
 
-        if(std::strcmp(argv[1], "chip8") == 0){
-            run<chip8::chip8, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "chip10") == 0){
-            run<chip8::chip10, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "chip8e") == 0){
-            run<chip8::chip8e, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "chip48") == 0){
-            run<chip8::chip48, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "chip8_fxf2_fx55_fx65") == 0){
-            run<chip8::chip8_fxf2_fx55_fx65, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "chip8_fxf2_bnnn") == 0){
-            run<chip8::chip8_fxf2_bnnn, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "chip8_fxf2") == 0){
-            run<chip8::chip8_fxf2, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "schip10") == 0){
-            run<chip8::schip10, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "schip11") == 0){
-            run<chip8::schip11, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "schip11scu") == 0){
-            run<chip8::schip11scu, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "schpc") == 0){
-            run<chip8::schpc, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "schip11_fx1e") == 0){
-            run<chip8::schip11_fx1e, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "schpc_fx1e") == 0){
-            run<chip8::schpc_fx1e, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "chip8x") == 0){
-            run<chip8::chip8x, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "xochip") == 0){
-            run<chip8::xochip, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "octo") == 0){
-            run<chip8::octo, frontend_sdl>(argv[2], L);
-        }else if(std::strcmp(argv[1], "chip8run") == 0){
-            run<chip8::chip8run, frontend_sdl>(argv[2], L);
-        }else{
-            throw std::runtime_error(std::string("unknown mode ") + argv[1]);
-        }
+        run<chip8::chip8_interpreter<chip8::chip8_instruction_set, chip8::chip8_quirks, chip8::chip8_hardware<chip8::chip8_palette>>, frontend_sdl>(argv[2], L);
 
     }catch(std::runtime_error &e){
         std::cerr << e.what() << "\n";
