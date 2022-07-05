@@ -114,7 +114,7 @@ namespace chip8{
                     quirk_fx1e_overflow_at_memory_size = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
                     lua_pop(L, 1);
 
-                    lua_getfield(L, -1, "00fe_00ff_clear_all_plan");
+                    lua_getfield(L, -1, "00fe_00ff_clear_all_planes");
                     quirk_00fe_00ff_clear_all_planes = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
                     lua_pop(L, 1);
 

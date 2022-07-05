@@ -633,7 +633,7 @@ namespace chip8{
                     
                     // fx3a - pitch register = Vx (XO-CHIP)
                     }else if(high_h == 0x0f && low == 0x3a){
-                        f.set_audio_frequency(4000.0 * exp2((hardware::registers.at(low_h) - 64) / 48.0));
+                        f.set_audio_frequency(4000.0 * exp2((hardware::registers.at(high_l) - 64) / 48.0));
 
                     }else{
                         matched_opcode = false;
@@ -652,12 +652,35 @@ namespace chip8{
                     matched_opcode = true;
 
                     // 001n - stop execution with exit status n (chip8run)
-                    if(high == 0x00 && low_h == 0x0c){
+                    if(high == 0x00 && low_h == 0x01){
                         return_value = 0;
                     
                     // 00fa - set override_fx55_fx65_no_increment to true (chip8run)
                     }else if(opcode == 0x00fa){
                         quirks::override_fx55_fx65_no_increment = true;
+                    
+                    }else{
+                        matched_opcode = false;
+                    }
+                    if(matched_opcode) return return_value;
+                }
+
+                if(instruction_set::eti660){
+                    matched_opcode = true;
+
+                    // fx00 - set sound frequency (ETI-660)
+                    if(high_h == 0x0f && low == 0x00){
+                        // i don't know the real frequency function for the ETI-660, this one is copied from CHIP-8X
+                        f.set_audio_frequency((27535 / (hardware::registers.at(high_l) + 1)) * 8);
+                    
+                    // 00f8 - display on (ETI-660) TODO
+                    }else if(opcode == 0x00f8){
+
+                    // 00fc - display off (ETI-660) TODO
+                    }else if(opcode == 0x00fc){
+
+                    // 00ff - no operation (ETI-660)
+                    }else if(opcode == 0x0ff){
                     
                     }else{
                         matched_opcode = false;

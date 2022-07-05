@@ -106,6 +106,23 @@ A combination of chip8_fxf2_fx55_fx65 and chip8_fxf2_bnnn:
 
 Same opcodes as CHIP-8, but with quirks.
 
+## CHIP-8 for ETI-660
+https://chip-8.github.io/extensions/#chip-8-for-eti-660
+https://archive.org/details/ETIA1981/ETI%201981-11%20November/page/n114/mode/2up
+
+- Increased resolution: 64x48
+- Programs start at 0x0600
+
+Added opcodes:
+
+opcode | description | note
+---|---|---
+0000 | stop execution | 
+00f8 | display on | 
+00fc | display off | 
+00ff | no operation |
+fx00 | set sound frequency | the correct mapping of Vx to a frequency is unknown
+
 ## SUPER-CHIP 1.0 (schip10)
 https://chip-8.github.io/extensions/#super-chip-10
 
