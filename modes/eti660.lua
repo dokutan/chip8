@@ -1,4 +1,4 @@
-font = require("fonts.octo")
+font = require("fonts.eti660")
 
 return {
     x = 64,
