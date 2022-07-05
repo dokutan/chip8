@@ -455,10 +455,10 @@ namespace chip8{
                     
                     // fx30 - I = address of large sprite of digit in Vx (SUPER-CHIP 1.1)
                     }else if(high_h == 0x0f && low == 0x30){
-                        if(hardware::registers.at(high_l) < 10){
-                            hardware::register_I = 80 + (hardware::registers.at(high_l)) * 10;
+                        if(quirks::quirk_fx30_allow_hex){
+                            hardware::register_I = 80 + (hardware::registers.at(high_l) % 16) * 10;
                         }else{
-                            throw std::runtime_error("invalid usage of opcode fx30");
+                            hardware::register_I = 80 + (hardware::registers.at(high_l) % 10) * 10;
                         }
 
                     }else{

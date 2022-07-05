@@ -142,6 +142,38 @@ namespace chip8{
                 allow_high_res = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
                 lua_pop(L, 1);
             }
+
+            void load_font(lua_State *L){
+                lua_getfield(L, -1, "font");
+                if(lua_istable(L, -1)){
+                    lua_pushnil(L);
+                    while(lua_next(L, -2)){
+                        if(lua_isinteger(L, -2) &&  lua_istable(L, -1)){
+                            size_t offset = lua_tointeger(L, -2);
+                            size_t length = lua_rawlen(L, -1);
+
+                            for(size_t i = 0; i < length; i++){
+                                lua_geti(L, -1, i + 1);
+                                memory.at(offset) = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 0x00;
+                                offset++;
+                                lua_pop(L, 1);
+                            }
+                        }
+                        lua_pop(L, 1);
+                    }
+                }else{
+                    // small font
+                    for(size_t i = 0; i < font.size(); i++){
+                    memory.at(i) = font.at(i);
+                    }
+
+                    // big font
+                    for(size_t i = 0; i < big_font.size(); i++){
+                        memory.at(80 + i) = big_font.at(i);
+                    }
+                }
+                lua_pop(L, 1);
+            }
             
             explicit chip8_hardware(lua_State *L){
                 load_config(L);
@@ -151,6 +183,9 @@ namespace chip8{
                 for(size_t i = 0; i < memory.size(); i++){
                     memory.at(i) = 0x00;
                 }
+
+                // font
+                load_font(L);
 
                 // initialize registers
                 registers.fill(0x00);
@@ -168,16 +203,6 @@ namespace chip8{
                             screen_content.at(plane).at(y).at(x) = 0x00;
                         }
                     }
-                }
-
-                // font
-                for(size_t i = 0; i < font.size(); i++){
-                    memory.at(i) = font.at(i);
-                }
-
-                // big font
-                for(size_t i = 0; i < big_font.size(); i++){
-                    memory.at(80 + i) = big_font.at(i);
                 }
 
                 // screen colors

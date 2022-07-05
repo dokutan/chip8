@@ -10,6 +10,7 @@
 #include <string>
 #include <thread>
 #include <cstring>
+#include <filesystem>
 
 #include "interpreter.cpp"
 #include "frontend_sdl.cpp"
@@ -68,6 +69,7 @@ int main(int argc, char* argv[]){
     try{
         lua_State *L = luaL_newstate();
         luaL_openlibs(L);
+        luaL_dostring(L, ("package.path = package.path .. ';" + std::filesystem::path(argv[1]).parent_path().string() + "/?.lua'").c_str());
 
         if(!luaL_dofile(L, argv[1]) == LUA_OK){
             throw std::runtime_error(lua_tostring(L, -1));

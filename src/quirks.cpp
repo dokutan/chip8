@@ -42,6 +42,8 @@ namespace chip8{
             bool quirk_00fe_00ff_clear_all_planes = false;
             /// scroll the double of the given pixels in low resolution mode
             bool quirk_lowres_double_scroll = false;
+            /// fx30: enable big hex characters
+            bool quirk_fx30_allow_hex = false;
 
             bool override_fx55_fx65_no_increment = false;
 
@@ -121,6 +123,10 @@ namespace chip8{
                     lua_getfield(L, -1, "lowres_double_scroll");
                     quirk_lowres_double_scroll = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
                     lua_pop(L, 1);
+
+                    lua_getfield(L, -1, "fx30_allow_hex");
+                    quirk_fx30_allow_hex = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
+                    lua_pop(L, 1);
                 }
                 lua_pop(L, 1);
             }
@@ -145,7 +151,8 @@ namespace chip8{
                 << "fx1e_set_vf                     " << (quirk_fx1e_set_vf ? "true\n" : "false\n")
                 << "fx1e_overflow_at_memory_size    " << (quirk_fx1e_overflow_at_memory_size ? "true\n" : "false\n")
                 << "00fe_00ff_clear_all_planes      " << (quirk_00fe_00ff_clear_all_planes ? "true\n" : "false\n")
-                << "lowres_double_scroll            " << (quirk_lowres_double_scroll ? "true\n" : "false\n");
+                << "lowres_double_scroll            " << (quirk_lowres_double_scroll ? "true\n" : "false\n")
+                << "fx30_allow_hex                  " << (quirk_fx30_allow_hex ? "true\n" : "false\n");
             }
     };
 
