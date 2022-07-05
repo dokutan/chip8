@@ -17,6 +17,9 @@ make
 ./chip8 modes/schip11.lua program.c8 # This runs program.c8 in the SUPER-CHIP 1.1 mode
 ```
 
+## Configuration
+Colors, fonts, quirks, … can be configured by (copying and) editing the mode definitions in ``modes``.
+
 ## TODO
 - make keys configurable
 - add more modes
