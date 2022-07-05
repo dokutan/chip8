@@ -22,7 +22,6 @@ return {
 		["00fe_00ff_clear_screen"] = true,
 		["00fe_00ff_clear_all_planes"] = true,
 		["lowres_double_scroll"] = true,
-		["fx30_allow_hex"] = true,
 	},
 	font = {
 		[0] = font.small,
