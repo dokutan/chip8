@@ -1,5 +1,5 @@
 return {
-    instruction_set = {
-        chip8e = true,
-    },
+	instruction_set = {
+		chip8e = true,
+	},
 }
