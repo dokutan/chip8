@@ -24,5 +24,8 @@ return {
 		["lowres_double_scroll"] = true,
 		["fx30_allow_hex"] = true,
 	},
-	font = font,
+	font = {
+		[0] = font.small,
+		[80] = font.big,
+	},
 }
