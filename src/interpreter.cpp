@@ -745,7 +745,7 @@ namespace chip8{
                     if(opcode == 0x07a2){
                         step_bg_color(f);
                     
-                    // 007c1 - enable foreground color instructions (ETI-660 color)
+                    // 007c1 - enable color instructions (ETI-660 color)
                     }else if(opcode == 0x07c1){
 
                     // 27ab - set forground color (ETI-660 color)
@@ -755,6 +755,39 @@ namespace chip8{
                         uint8_t color = hardware::registers.at(0xd);
 
                         if(zone_x > 7 || zone_y > 23 || color > 7){
+                            throw std::runtime_error("invalid usage of opcode 27ab");
+                        }
+
+                        for(size_t x = zone_x * 8; x < zone_x * 8 + 8; x++){
+                            for(size_t y = zone_y * 2; y < zone_y * 2 + 2; y++){
+                                hardware::screen_fg_color.at(y).at(x) = color;
+                                f.draw(x, y, hardware::palette.color(this, x, y));
+                            }
+                        }
+                    
+                    }else{
+                        matched_opcode = false;
+                    }
+                    if(matched_opcode) return return_value;
+                }
+
+                if(instruction_set::eti660color_highres){
+                    matched_opcode = true;
+
+                    // 049f - step background color (ETI-660 high res color)
+                    if(opcode == 0x049f){
+                        step_bg_color(f);
+                    
+                    // 04a2 - enable color instructions (ETI-660 high res color)
+                    }else if(opcode == 0x04a2){
+
+                    // 04b2 - set forground color (ETI-660 high res color)
+                    }else if(opcode == 0x04b2){
+                        size_t zone_x = hardware::registers.at(0x1);
+                        size_t zone_y = hardware::registers.at(0x2);
+                        uint8_t color = hardware::registers.at(0x0);
+
+                        if(zone_x > 7 || zone_y > 32 || color > 7){
                             throw std::runtime_error("invalid usage of opcode 27ab");
                         }
 
