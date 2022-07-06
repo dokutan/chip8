@@ -106,7 +106,7 @@ A combination of chip8_fxf2_fx55_fx65 and chip8_fxf2_bnnn:
 
 Same opcodes as CHIP-8, but with quirks.
 
-## CHIP-8 for ETI-660
+## CHIP-8 for ETI-660 (eti660)
 https://chip-8.github.io/extensions/#chip-8-for-eti-660
 https://archive.org/details/ETIA1981/ETI%201981-11%20November/page/n114/mode/2up
 
@@ -122,6 +122,37 @@ opcode | description | note
 00fc | display off | 
 00ff | no operation |
 fx00 | set sound frequency | the correct mapping of Vx to a frequency is unknown
+
+## CHIP-8 with color support for ETI-660 (eti660color)
+https://chip-8.github.io/extensions/#chip-8-with-color-support-for-eti-660
+https://archive.org/stream/ETIA1982/ETI%201982-04%20April#page/n87/mode/2up
+
+Based on the ETI-660 version, with color.
+
+Added opcodes:
+
+opcode | description | note
+---|---|---
+07a2 | step background color | 
+07c1 | enable color instructions |
+27ab | set foreground color in area given by VE (x) and VF (y) to VD |
+
+## CHIP-8 with high resolution and color support for ETI-660 (eti660color_highres)
+https://chip-8.github.io/extensions/#chip-8-for-eti-660-with-high-resolution
+https://archive.org/stream/ETIA1984/ETI%201984-02%20February#page/n87/mode/1up
+
+Similar to the ETI-660 color extension:
+- Increased resolution: 64x64
+- Different color opcodes
+- Programs start at 0x0700
+
+Added opcodes:
+
+opcode | description | note
+---|---|---
+049f | step background color | 
+04a2 | enable color instructions |
+04b2 | set foreground color in area given by V1 (x) and V2 (y) to V0 |
 
 ## SUPER-CHIP 1.0 (schip10)
 https://chip-8.github.io/extensions/#super-chip-10
