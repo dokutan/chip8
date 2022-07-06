@@ -12,6 +12,7 @@ double audio_frequency = 4000.0;
 class frontend_sdl{
     protected:
         int screen_width, screen_height, scale, frame_time;
+        bool draw_disabled = false;
 
     private:
         SDL_Window* sdl_window;
@@ -141,6 +142,10 @@ class frontend_sdl{
             return sdl_event.type == SDL_QUIT;
         }
 
+        void set_draw_disabled(bool disabled){
+            draw_disabled = disabled;
+        }
+
         template<class chip8> void get_keys(chip8 &c8){
             
             if(sdl_event.type == SDL_KEYDOWN || sdl_event.type == SDL_KEYUP){
@@ -194,6 +199,8 @@ class frontend_sdl{
         }
 
         void draw(int x, int y, std::array<uint8_t, 3> color){
+            if(draw_disabled) return;
+
             SDL_Rect rect;
             rect.x = x * scale;
             rect.y = y * scale;
@@ -205,6 +212,8 @@ class frontend_sdl{
         }
 
         void clear(std::array<uint8_t, 3> color){
+            if(draw_disabled) return;
+
             SDL_SetRenderDrawColor(sdl_renderer, color.at(0), color.at(1), color.at(2), 0x00);
             SDL_RenderClear(sdl_renderer);
         }

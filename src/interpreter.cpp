@@ -455,7 +455,7 @@ namespace chip8{
                     
                     // fx30 - I = address of large sprite of digit in Vx (SUPER-CHIP 1.1)
                     }else if(high_h == 0x0f && low == 0x30){
-                        hardware::register_I = 80 + (hardware::registers.at(high_l) % 16) * 10;
+                        hardware::register_I = 80 + (hardware::registers.at(high_l) & 0x0f) * 10;
 
                     }else{
                         matched_opcode = false;
@@ -675,9 +675,17 @@ namespace chip8{
                     
                     // 00f8 - display on (ETI-660) TODO
                     }else if(opcode == 0x00f8){
+                        f.set_draw_disabled(false);
+                        for(unsigned int x = 0; x < hardware::screen_x; x++){
+                            for(unsigned int y = 0; y < hardware::screen_y; y++){
+                                f.draw(x, y, hardware::palette.color(this, x, y));
+                            }
+                        }
 
                     // 00fc - display off (ETI-660) TODO
                     }else if(opcode == 0x00fc){
+                        f.clear({{0, 0, 0}});
+                        f.set_draw_disabled(true);
 
                     // 00ff - no operation (ETI-660)
                     }else if(opcode == 0x0ff){
