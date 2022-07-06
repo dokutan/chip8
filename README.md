@@ -21,5 +21,6 @@ make
 Colors, fonts, quirks, … can be configured by (copying and) editing the mode definitions in ``modes``.
 
 ## TODO
-- make keys configurable
+- make keys, scaling configurable
+- add support for mapping the framebuffer to memory
 - add more modes

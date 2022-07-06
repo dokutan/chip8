@@ -125,7 +125,13 @@ namespace chip8{
                 }
             }
 
-            /// clear the screen
+            /**
+             * @brief clear the screen
+             *
+             * @tparam frontend
+             * @param f frontend
+             * @param force_all_planes if true, clear inactive planes
+             */
             template<class frontend> void clear_screen(frontend &f, bool force_all_planes=false){
                 for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane) && !force_all_planes) continue;
@@ -141,6 +147,13 @@ namespace chip8{
                 }
             }
 
+            /**
+             * @brief scroll up n pixels
+             *
+             * @tparam frontend
+             * @param f frontend
+             * @param n amount of pixels to scroll
+             */
             template<class frontend> void scroll_up(frontend &f, unsigned int n){
                 for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
@@ -163,6 +176,13 @@ namespace chip8{
                 }
             }
 
+            /**
+             * @brief scroll down n pixels
+             *
+             * @tparam frontend
+             * @param f frontend
+             * @param n amount of pixels to scroll
+             */
             template<class frontend> void scroll_down(frontend &f, unsigned int n){
                 for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
@@ -185,6 +205,12 @@ namespace chip8{
                 }
             }
 
+            /**
+             * @brief scroll right 4 pixels
+             *
+             * @tparam frontend
+             * @param f frontend
+             */
             template<class frontend> void scroll_right(frontend &f){
                 for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
@@ -209,6 +235,12 @@ namespace chip8{
                 }
             }
 
+            /**
+             * @brief scroll left 4 pixels
+             *
+             * @tparam frontend
+             * @param f frontend
+             */
             template<class frontend> void scroll_left(frontend &f){
                 for(unsigned int plane = 0; plane < hardware::screen_planes; plane++){
                     if(!hardware::active_screen_planes.at(plane)) continue;
@@ -229,6 +261,21 @@ namespace chip8{
                         f.draw(x - 3, y, hardware::palette.color(this, x - 3, y));
                         f.draw(x - 2, y, hardware::palette.color(this, x - 2, y));
                         f.draw(x - 1, y, hardware::palette.color(this, x - 1, y));
+                    }
+                }
+            }
+
+            /**
+             * @brief changes the background color (CHIP-8X, ETI-660 color)
+             *
+             * @tparam frontend
+             * @param f frontend
+             */
+            template<class frontend> void step_bg_color(frontend &f){
+                hardware::screen_bg_color = (hardware::screen_bg_color + 1) % 4;
+                for(unsigned int y = 0; y < hardware::screen_y; y++){
+                    for(unsigned int x = 0; x < hardware::screen_x; x++){
+                        if(!hardware::screen_get(0, x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
                     }
                 }
             }
@@ -485,12 +532,7 @@ namespace chip8{
                     
                     // 02a0 - step background color (CHIP-8X)
                     if(opcode == 0x02a0){
-                        hardware::screen_bg_color = (hardware::screen_bg_color + 1) % 4;
-                        for(unsigned int y = 0; y < hardware::screen_y; y++){
-                            for(unsigned int x = 0; x < hardware::screen_x; x++){
-                                if(!hardware::screen_get(0, x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
-                            }
-                        }
+                        step_bg_color(f);
                     
                     // 5xy1 - for each nibble in Vx, Vy: Vx = (Vx + Vy) % 8 (CHIP-8X)
                     }else if(high_h == 0x05 && low_l == 0x01){
@@ -513,7 +555,7 @@ namespace chip8{
                         unsigned int y1 = y0 + zone_y + (hardware::registers.at((high_l + 1) % hardware::registers.size()) >> 4) * zone_y;
 
                         uint8_t color = hardware::registers.at(low_h);
-                        if(color > 8){
+                        if(color > 7){
                             throw std::runtime_error("invalid usage of opcode bxy0");
                         }
                         
@@ -524,7 +566,7 @@ namespace chip8{
                                 if(y >= hardware::screen_y) break;
 
                                 hardware::screen_fg_color.at(y).at(x) = color;
-                                if(hardware::screen_get(0, x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
+                                f.draw(x, y, hardware::palette.color(this, x, y));
                             }
                         }
                         
@@ -535,7 +577,7 @@ namespace chip8{
                         unsigned int y0 = hardware::registers.at((high_l + 1) % hardware::registers.size());
 
                         uint8_t color = hardware::registers.at(low_h);
-                        if(color > 8){
+                        if(color > 7){
                             throw std::runtime_error("invalid usage of opcode bxyn");
                         }
                         
@@ -546,7 +588,7 @@ namespace chip8{
                                 if(y >= hardware::screen_y) break;
 
                                 hardware::screen_fg_color.at(y).at(x) = color;
-                                if(hardware::screen_get(0, x, y)) f.draw(x, y, hardware::palette.color(this, x, y));
+                                f.draw(x, y, hardware::palette.color(this, x, y));
                             }
                         }
 
@@ -673,7 +715,7 @@ namespace chip8{
                         // i don't know the real frequency function for the ETI-660, this one is copied from CHIP-8X
                         f.set_audio_frequency((27535 / (hardware::registers.at(high_l) + 1)) * 8);
                     
-                    // 00f8 - display on (ETI-660) TODO
+                    // 00f8 - display on (ETI-660)
                     }else if(opcode == 0x00f8){
                         f.set_draw_disabled(false);
                         for(unsigned int x = 0; x < hardware::screen_x; x++){
@@ -682,13 +724,46 @@ namespace chip8{
                             }
                         }
 
-                    // 00fc - display off (ETI-660) TODO
+                    // 00fc - display off (ETI-660)
                     }else if(opcode == 0x00fc){
                         f.clear({{0, 0, 0}});
                         f.set_draw_disabled(true);
 
                     // 00ff - no operation (ETI-660)
                     }else if(opcode == 0x0ff){
+                    
+                    }else{
+                        matched_opcode = false;
+                    }
+                    if(matched_opcode) return return_value;
+                }
+
+                if(instruction_set::eti660color){
+                    matched_opcode = true;
+
+                    // 07a2 - step background color (ETI-660 color)
+                    if(opcode == 0x07a2){
+                        step_bg_color(f);
+                    
+                    // 007c1 - enable foreground color instructions (ETI-660 color)
+                    }else if(opcode == 0x07c1){
+
+                    // 27ab - set forground color (ETI-660 color)
+                    }else if(opcode == 0x27ab){
+                        size_t zone_x = hardware::registers.at(0xe);
+                        size_t zone_y = hardware::registers.at(0xf);
+                        uint8_t color = hardware::registers.at(0xd);
+
+                        if(zone_x > 7 || zone_y > 23 || color > 7){
+                            throw std::runtime_error("invalid usage of opcode 27ab");
+                        }
+
+                        for(size_t x = zone_x * 8; x < zone_x * 8 + 8; x++){
+                            for(size_t y = zone_y * 2; y < zone_y * 2 + 2; y++){
+                                hardware::screen_fg_color.at(y).at(x) = color;
+                                f.draw(x, y, hardware::palette.color(this, x, y));
+                            }
+                        }
                     
                     }else{
                         matched_opcode = false;

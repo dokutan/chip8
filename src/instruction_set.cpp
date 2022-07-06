@@ -24,6 +24,8 @@ namespace chip8{
             bool chip8run = false;
             /// the ETI-660 extensions
             bool eti660 = false;
+            /// the ETI-660 color extensions
+            bool eti660color = false;
 
         public:
             explicit chip8_instruction_set(lua_State *L){
@@ -68,6 +70,10 @@ namespace chip8{
                     lua_getfield(L, -1, "eti660");
                     chip8run = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
                     lua_pop(L, 1);
+
+                    lua_getfield(L, -1, "eti660color");
+                    eti660color = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
+                    lua_pop(L, 1);
                 }
                 lua_pop(L, 1);
             }
@@ -84,7 +90,8 @@ namespace chip8{
                 << "xochip                          " << (xochip ? "true\n" : "false\n")
                 << "stop_0000                       " << (stop_0000 ? "true\n" : "false\n")
                 << "chip8run                        " << (chip8run ? "true\n" : "false\n")
-                << "eti660                          " << (eti660 ? "true\n" : "false\n");
+                << "eti660                          " << (eti660 ? "true\n" : "false\n")
+                << "eti660color                     " << (eti660color ? "true\n" : "false\n");
             }
     };
 }
