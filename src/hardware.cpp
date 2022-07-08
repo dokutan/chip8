@@ -51,23 +51,24 @@ namespace chip8{
                 0x3c, 0x7e, 0xc3, 0xc3, 0x7f, 0x3f, 0x03, 0x03, 0x3e, 0x7c,
             }};
             
-            // main memory
-            size_t memory_size;
+            /// main memory
             std::vector<uint8_t> memory;
+            /// size of `memory`
+            size_t memory_size;
 
-            // start of the program
+            /// start of the program
             uint16_t program_start;
             
-            // registers V0-Vf
+            /// registers V0-Vf
             std::array<uint8_t, 16> registers;
             
-            // register I (16 bit for a memory address)
+            /// register I (16 bit for a memory address)
             uint16_t register_I = 0x0000;
 
-            // flag registers (used only for e.g. SUPER-CHIP)
+            /// flag registers (used only for e.g. SUPER-CHIP)
             std::array<uint8_t, 16> flag_registers;
 
-            // RD.0 register
+            /// RD.0 register (used for some opcode combinations)
             uint8_t register_rd0;
             
             // timers
