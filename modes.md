@@ -172,6 +172,23 @@ opcode | description | note
 fx75 | store V0 - Vx in RPL user flags (0 <= x <= 7) |
 fx85 | load V0 - Vx from RPL user flags (0 <= x <= 7) |
 
+## CHIP-8 for COSMAC ELF (chip8elf)
+https://chip-8.github.io/extensions/#chip-8-for-cosmac-elf
+https://raw.githubusercontent.com/trapexit/chip-8_documentation/master/Programs%20for%20the%20COSMAC%20ELF%20-%20Paul%20C.%20Moews/Interpreters%20-%20Paul%20C.%20Moews.pdf
+
+From Programs for the COSMAC ELF – Interpreters, adds a few instructions:
+
+opcode | description | note
+---|---|---
+5xy1 | skip if Vx > Vy |
+5xy2 | skip if Vx < Vy |
+5xy3 | skip if Vx != Vy |
+9xy1 | Vf,Vx = Vx * Vy |
+9xy2 | Vx = Vx / Vy, Vf = remainder |
+9xy3 | convert Vx,Vy to BCD stored at I,I+1,I+2,I+3,I+4 |
+fx75 | output Vx to hex display | implemented as Lua callback
+fx94 | set I to location of ASCII character in Vx |
+
 ## SUPER-CHIP 1.1 (schip11)
 http://devernay.free.fr/hacks/chip8/schip.txt
 https://chip-8.github.io/extensions/#super-chip-11

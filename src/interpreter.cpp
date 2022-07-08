@@ -22,6 +22,8 @@ namespace chip8{
         protected:
             bool skip_instruction;
 
+            lua_State *L;
+
             void bcd_of_v(uint8_t x){
                 std::stringstream s_stream;
                 s_stream << std::setw(3) << std::setfill('0') << std::dec << (int)hardware::registers.at(x);
@@ -30,6 +32,18 @@ namespace chip8{
                 hardware::memory.at(hardware::register_I) = std::stoi(str.substr(0, 1));
                 hardware::memory.at(hardware::register_I + 1) = std::stoi(str.substr(1, 1));
                 hardware::memory.at(hardware::register_I + 2) = std::stoi(str.substr(2, 1));
+            }
+
+            void bcd_16_bit(uint16_t x){
+                std::stringstream s_stream;
+                s_stream << std::setw(5) << std::setfill('0') << std::dec << (int)x;
+                std::string str = s_stream.str();
+
+                hardware::memory.at(hardware::register_I) = std::stoi(str.substr(0, 1));
+                hardware::memory.at(hardware::register_I + 1) = std::stoi(str.substr(1, 1));
+                hardware::memory.at(hardware::register_I + 2) = std::stoi(str.substr(2, 1));
+                hardware::memory.at(hardware::register_I + 3) = std::stoi(str.substr(3, 1));
+                hardware::memory.at(hardware::register_I + 4) = std::stoi(str.substr(4, 1));
             }
 
             /// draw a pixel
@@ -283,6 +297,8 @@ namespace chip8{
         public:
             explicit chip8_interpreter(lua_State *L) : hardware(L), quirks(L), instruction_set(L){
                 skip_instruction = false;
+
+                this->L = L;
             }
 
             template<class frontend> void frontend_init(frontend &f){
@@ -343,6 +359,11 @@ namespace chip8{
                     // 32 bit instruction?
                     if(instruction_set::xochip){
                         if(hardware::memory.at(hardware::pc) == 0xf0 && hardware::memory.at(hardware::pc + 1) == 0x00){
+                            hardware::pc += 2;
+                        }
+                    }
+                    if(instruction_set::chip8elf){
+                        if(hardware::memory.at(hardware::pc) == 0xff && hardware::memory.at(hardware::pc + 1) == 0xff){
                             hardware::pc += 2;
                         }
                     }
@@ -797,6 +818,62 @@ namespace chip8{
                                 f.draw(x, y, hardware::palette.color(this, x, y));
                             }
                         }
+                    
+                    }else{
+                        matched_opcode = false;
+                    }
+                    if(matched_opcode) return return_value;
+                }
+
+                if(instruction_set::chip8elf){
+                    matched_opcode = true;
+
+                    // 5xy1 - skip if Vx > Vy (CHIP-8 for COSMAC ELF)
+                    if(high_h == 0x05 && low_l == 0x01){
+                        if(hardware::registers.at(high_l) > hardware::registers.at(low_h)) skip_instruction = true;
+                    
+                    // 5xy2 - skip if Vx < Vy (CHIP-8 for COSMAC ELF)
+                    }else if(high_h == 0x05 && low_l == 0x02){
+                        if(hardware::registers.at(high_l) < hardware::registers.at(low_h)) skip_instruction = true;
+
+                    // 5xy3 - skip if Vx != Vy (CHIP-8 for COSMAC ELF)
+                    }else if(high_h == 0x05 && low_l == 0x03){
+                        if(hardware::registers.at(high_l) != hardware::registers.at(low_h)) skip_instruction = true;
+                    
+                    // 9xy1 - Vf,Vx = Vx * Vy (CHIP-8 for COSMAC ELF)
+                    }else if(high_h == 0x09 && low_l == 0x01){
+                        uint16_t result = (uint16_t)hardware::registers.at(high_l) * (uint16_t)hardware::registers.at(low_h);
+                        hardware::registers.at(0xf) = result >> 8;
+                        hardware::registers.at(high_l) = result & 0xff;
+                    
+                    // 9xy2 - Vx = Vx / Vy, Vf = remainder (CHIP-8 for COSMAC ELF)
+                    }else if(high_h == 0x09 && low_l == 0x02){
+                        uint8_t result = hardware::registers.at(high_l) / hardware::registers.at(low_h);
+                        uint8_t remainder = hardware::registers.at(high_l) % hardware::registers.at(low_h);
+                        hardware::registers.at(high_l) = result;
+                        hardware::registers.at(0xf) = remainder;
+                    
+                    // 9xy3 - convert Vx,Vy to BCD stored at I,I+1,I+2,I+3,I+4 (CHIP-8 for COSMAC ELF)
+                    }else if(high_h == 0x09 && low_l == 0x03){
+                        uint16_t xy = ((uint16_t)hardware::registers.at(high_l) << 8) | (uint16_t)hardware::registers.at(low_h);
+                        bcd_16_bit(xy);
+                    
+                    // fx75 - output Vx to hex display (CHIP-8 for COSMAC ELF)
+                    }else if(high_h == 0x0f && low == 0x75){
+                        lua_getfield(L, -1, "print_hex");
+                        if(lua_isfunction(L, -1)){
+                            lua_pushinteger(L, hardware::registers.at(high_l));
+                            lua_pcall(L, 1, 0, 0);
+                        }else{
+                            lua_pop(L, 1);
+                        }
+
+                    // fx94 - set I to location of ASCII character in Vx (CHIP-8 for COSMAC ELF) TODO
+                    }else if(high_h == 0x0f && low == 0x94){
+                    
+                    // ffff nmmm - jump to nmmm (CHIP-8 for COSMAC ELF)
+                    }else if(high == 0xff && low == 0xff){
+                        hardware::pc = ((uint16_t)hardware::memory.at(hardware::pc) << 8) | (uint16_t)hardware::memory.at(hardware::pc + 1);
                     
                     }else{
                         matched_opcode = false;

@@ -28,6 +28,8 @@ namespace chip8{
             bool eti660color = false;
             /// the ETI-660 high resolution color extensions
             bool eti660color_highres = false;
+            /// the extensions from CHIP-8 for COSMAC ELF
+            bool chip8elf = false;
 
         public:
             explicit chip8_instruction_set(lua_State *L){
@@ -80,6 +82,10 @@ namespace chip8{
                     lua_getfield(L, -1, "eti660color_highres");
                     eti660color_highres = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
                     lua_pop(L, 1);
+
+                    lua_getfield(L, -1, "chip8elf");
+                    chip8elf = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
+                    lua_pop(L, 1);
                 }
                 lua_pop(L, 1);
             }
@@ -98,7 +104,8 @@ namespace chip8{
                 << "chip8run                        " << (chip8run ? "true\n" : "false\n")
                 << "eti660                          " << (eti660 ? "true\n" : "false\n")
                 << "eti660color                     " << (eti660color ? "true\n" : "false\n")
-                << "eti660color_highres             " << (eti660color_highres ? "true\n" : "false\n");
+                << "eti660color_highres             " << (eti660color_highres ? "true\n" : "false\n")
+                << "chip8elf                        " << (chip8elf ? "true\n" : "false\n");
             }
     };
 }
