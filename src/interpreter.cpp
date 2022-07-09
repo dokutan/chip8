@@ -860,7 +860,7 @@ namespace chip8{
                     
                     // fx75 - output Vx to hex display (CHIP-8 for COSMAC ELF)
                     }else if(high_h == 0x0f && low == 0x75){
-                        lua_getfield(L, -1, "print_hex");
+                        lua_getfield(L, -1, "hex_display");
                         if(lua_isfunction(L, -1)){
                             lua_pushinteger(L, hardware::registers.at(high_l));
                             lua_pcall(L, 1, 0, 0);
@@ -868,8 +868,25 @@ namespace chip8{
                             lua_pop(L, 1);
                         }
 
-                    // fx94 - set I to location of ASCII character in Vx (CHIP-8 for COSMAC ELF) TODO
+                    // fx94 - set I to location of ASCII character in Vx (CHIP-8 for COSMAC ELF)
                     }else if(high_h == 0x0f && low == 0x94){
+                        uint8_t character = hardware::registers.at(high_l);
+                        if(character >= 64) throw std::runtime_error("invalid usage of opcode fx94");
+
+                        uint8_t b1 = hardware::memory.at(hardware::ascii_font_start + 16 + 3 * character);
+                        uint8_t b2 = hardware::memory.at(hardware::ascii_font_start + 17 + 3 * character);
+                        uint8_t b3 = hardware::memory.at(hardware::ascii_font_start + 18 + 3 * character);
+
+                        hardware::register_I = hardware::ascii_font_start + 16 + 64 * 3;
+                        hardware::register_I = 500;
+
+                        hardware::memory.at(hardware::register_I) = hardware::memory.at(hardware::ascii_font_start + (b3 & 0x0f));
+                        hardware::memory.at(hardware::register_I + 1) = hardware::memory.at(hardware::ascii_font_start + (b2 >> 4));
+                        hardware::memory.at(hardware::register_I + 2) = hardware::memory.at(hardware::ascii_font_start + (b2 & 0x0f));
+                        hardware::memory.at(hardware::register_I + 3) = hardware::memory.at(hardware::ascii_font_start + (b1 >> 4));
+                        hardware::memory.at(hardware::register_I + 4) = hardware::memory.at(hardware::ascii_font_start + (b1 & 0x0f));
+
+                        hardware::registers.at(0) = (b3 >> 4);
                     
                     // ffff nmmm - jump to nmmm (CHIP-8 for COSMAC ELF)
                     }else if(high == 0xff && low == 0xff){

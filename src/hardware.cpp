@@ -19,6 +19,7 @@ namespace chip8{
         friend palette_t;
 
         protected:
+            /// default small font
             static constexpr std::array<uint8_t, 80> font = {{
                 0xf0, 0x90, 0x90, 0x90, 0xf0,
                 0x20, 0x60, 0x20, 0x20, 0x70,
@@ -38,6 +39,7 @@ namespace chip8{
                 0xf0, 0x80, 0xf0, 0x80, 0x80,
             }};
 
+            /// default big font
             static constexpr std::array<uint8_t, 100> big_font = {{
                 0x3c, 0x7e, 0xe7, 0xc3, 0xc3, 0xc3, 0xc3, 0xe7, 0x7e, 0x3c,
                 0x18, 0x38, 0x58, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x3c,
@@ -50,7 +52,10 @@ namespace chip8{
                 0x3c, 0x7e, 0xc3, 0xc3, 0x7e, 0x7e, 0xc3, 0xc3, 0x7e, 0x3c,
                 0x3c, 0x7e, 0xc3, 0xc3, 0x7f, 0x3f, 0x03, 0x03, 0x3e, 0x7c,
             }};
-            
+
+            /// start of the ASCII font (CHIP-8 for COSMAC ELF)
+            uint16_t ascii_font_start = 0;
+
             /// main memory
             std::vector<uint8_t> memory;
             /// size of `memory`
@@ -85,20 +90,21 @@ namespace chip8{
             bool allow_high_res;
             bool high_res = false; // high resolution mode for SUPER-CHIP
 
-            // active screen planes
+            /// stores which screen planes are active
             std::vector<bool> active_screen_planes;
 
-            // foreground and background color for CHIP-8X
+            /// foreground colors for CHIP-8X
             std::vector<std::vector<uint8_t>> screen_fg_color;
+            /// background color for CHIP-8X
             uint8_t screen_bg_color;
 
-            // color palette
+            /// color palette
             palette_t palette;
             
-            // program counter
+            /// program counter
             uint16_t pc;
             
-            // call stack (for returning from subroutines)
+            /// call stack (for returning from subroutines)
             std::stack< uint16_t > call_stack;
 
             // currently pressed key
@@ -141,6 +147,10 @@ namespace chip8{
 
                 lua_getfield(L, -1, "allow_high_res");
                 allow_high_res = lua_isboolean(L, -1) ? lua_toboolean(L, -1) : false;
+                lua_pop(L, 1);
+
+                lua_getfield(L, -1, "ascii_font_start");
+                ascii_font_start = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : false;
                 lua_pop(L, 1);
             }
 
@@ -279,6 +289,7 @@ namespace chip8{
                 outstream
                 << "memory                          " << memory_size << " bytes\n"
                 << "program start                   0x" << std::hex << std::setw(4) << std::setfill('0') << program_start << std::dec << std::setw(0) << std::setfill(' ') << "\n"
+                << "ascii font start                0x" << std::hex << std::setw(4) << std::setfill('0') << ascii_font_start << std::dec << std::setw(0) << std::setfill(' ') << "\n"
                 << "screen resolution               " << screen_x << "x" << screen_y << "x" << screen_planes << "\n"
                 << "high/low resolution modes       " << (allow_high_res ? "true\n" : "false\n");
             }
