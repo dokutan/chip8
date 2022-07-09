@@ -428,7 +428,13 @@ namespace chip8{
 
                     // fx03 - send Vx to output port 3 (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0x03){
-                        throw std::runtime_error("opcode fx03 is not implemented");
+                        lua_getfield(L, -1, "output_port_3");
+                        if(lua_isfunction(L, -1)){
+                            lua_pushinteger(L, hardware::registers.at(high_l));
+                            lua_pcall(L, 1, 0, 0);
+                        }else{
+                            lua_pop(L, 1);
+                        }
                     
                     // fx1b - skip Vx bytes (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0x1b){
@@ -441,11 +447,25 @@ namespace chip8{
                     
                     // fxe3 - wait for strobe at EF4; read Vx from input port 3 (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0xe3){
-                        throw std::runtime_error("opcode fxe3 is not implemented");
+                        lua_getfield(L, -1, "input_port_3_wait");
+                        if(lua_isfunction(L, -1)){
+                            lua_pcall(L, 0, 1, 0);
+                            hardware::registers.at(high_l) = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 0;
+                            lua_pop(L, 1);
+                        }else{
+                            lua_pop(L, 1);
+                        }
                     
                     // fxe7 - read Vx from input port 3 (CHIP-8E)
                     }else if(high_h == 0x0f && low == 0xe7){
-                        throw std::runtime_error("opcode fxe7 is not implemented");
+                        lua_getfield(L, -1, "input_port_3");
+                        if(lua_isfunction(L, -1)){
+                            lua_pcall(L, 0, 1, 0);
+                            hardware::registers.at(high_l) = lua_isinteger(L, -1) ? lua_tointeger(L, -1) : 0;
+                            lua_pop(L, 1);
+                        }else{
+                            lua_pop(L, 1);
+                        }
 
                     }else{
                         matched_opcode = false;
@@ -878,7 +898,6 @@ namespace chip8{
                         uint8_t b3 = hardware::memory.at(hardware::ascii_font_start + 18 + 3 * character);
 
                         hardware::register_I = hardware::ascii_font_start + 16 + 64 * 3;
-                        hardware::register_I = 500;
 
                         hardware::memory.at(hardware::register_I) = hardware::memory.at(hardware::ascii_font_start + (b3 & 0x0f));
                         hardware::memory.at(hardware::register_I + 1) = hardware::memory.at(hardware::ascii_font_start + (b2 >> 4));

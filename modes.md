@@ -74,11 +74,11 @@ opcode | description | note
 5xy3 | load Vx to Vy from memory starting at I; I = I + (x-y) + 1 |
 bbnn | jump to current instruction - nn bytes | 
 bfnn | jump to current instruction + nn bytes | 
-fx03 | send Vx to output port 3 | not implemented
+fx03 | send Vx to output port 3 |  implemented as Lua callback (output_port_3)
 fx1b | skip Vx bytes | 
 fx4f | delay timer = Vx; wait until the delay timer reaches 0 | 
-fxe3 | wait for strobe at EF4; read Vx from input port 3 | not implemented
-fxe7 | read Vx from input port 3 | not implemented
+fxe3 | wait for strobe at EF4; read Vx from input port 3 |  implemented as Lua callback (input_port_3_wait)
+fxe7 | read Vx from input port 3 |  implemented as Lua callback (input_port_3)
 
 ## CHIP-8 modification for saving and restoring variables (chip8_fxf2_fx55_fx65)
 https://chip-8.github.io/extensions/#chip-8-modification-for-saving-and-restoring-variables
